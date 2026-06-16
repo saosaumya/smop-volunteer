@@ -4,52 +4,52 @@ import { HiCheckCircle, HiExclamationCircle, HiInformationCircle } from 'react-i
 const SCRIPT_URL = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
 
 const allShifts = [
-  { date: 'Saturday, June 27', startDateTime: '2026-06-27T08:30:00', time: '8:30 – 10:00 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
-  { date: 'Saturday, June 27', startDateTime: '2026-06-27T11:30:00', time: '11:30 am – 1:00 pm', site: 'Helping Hands at Sunnyvale Public Library', address: '665 W Olive Ave, Sunnyvale, CA 94086' },
-  { date: 'Sunday, June 28', startDateTime: '2026-06-28T10:30:00', time: '10:30 am – 12:30 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
-  { date: 'Saturday, July 11', startDateTime: '2026-07-11T08:00:00', time: '8:00 – 10:00 am', site: "Hope's Corner", address: '748 Mercy St, Mountain View, CA 94041' },
-  { date: 'Saturday, July 11', startDateTime: '2026-07-11T08:30:00', time: '8:30 – 10:00 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
-  { date: 'Sunday, July 12', startDateTime: '2026-07-12T10:30:00', time: '10:30 am – 12:30 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
-  { date: 'Tuesday, July 14', startDateTime: '2026-07-14T18:00:00', time: '6:00 – 7:00 pm', site: 'WeHOPE', address: '1854 Bay Road, East Palo Alto, CA 94303' },
-  { date: 'Saturday, July 25', startDateTime: '2026-07-25T08:30:00', time: '8:30 – 10:00 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
-  { date: 'Saturday, July 25', startDateTime: '2026-07-25T11:30:00', time: '11:30 am – 1:00 pm', site: 'Helping Hands at Sunnyvale Public Library', address: '665 W Olive Ave, Sunnyvale, CA 94086' },
-  { date: 'Sunday, July 26', startDateTime: '2026-07-26T10:30:00', time: '10:30 am – 12:30 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
-  { date: 'Saturday, August 8', startDateTime: '2026-08-08T08:00:00', time: '8:00 – 10:00 am', site: "Hope's Corner", address: '748 Mercy St, Mountain View, CA 94041' },
-  { date: 'Saturday, August 8', startDateTime: '2026-08-08T08:30:00', time: '8:30 – 10:00 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
-  { date: 'Sunday, August 9', startDateTime: '2026-08-09T10:30:00', time: '10:30 am – 12:30 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
-  { date: 'Tuesday, August 11', startDateTime: '2026-08-11T18:00:00', time: '6:00 – 7:00 pm', site: 'WeHOPE', address: '1854 Bay Road, East Palo Alto, CA 94303' },
-  { date: 'Saturday, August 22', startDateTime: '2026-08-22T08:30:00', time: '8:30 – 10:00 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
-  { date: 'Sunday, August 23', startDateTime: '2026-08-23T10:30:00', time: '10:30 am – 12:30 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
-  { date: 'Saturday, August 29', startDateTime: '2026-08-29T11:30:00', time: '11:30 am – 1:00 pm', site: 'Helping Hands at Sunnyvale Public Library', address: '665 W Olive Ave, Sunnyvale, CA 94086' },
-  { date: 'Saturday, September 5', startDateTime: '2026-09-05T08:30:00', time: '8:30 – 10:00 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
-  { date: 'Sunday, September 6', startDateTime: '2026-09-06T10:30:00', time: '10:30 am – 12:30 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
-  { date: 'Tuesday, September 8', startDateTime: '2026-09-08T18:00:00', time: '6:00 – 7:00 pm', site: 'WeHOPE', address: '1854 Bay Road, East Palo Alto, CA 94303' },
-  { date: 'Saturday, September 12', startDateTime: '2026-09-12T08:00:00', time: '8:00 – 10:00 am', site: "Hope's Corner", address: '748 Mercy St, Mountain View, CA 94041' },
-  { date: 'Saturday, September 19', startDateTime: '2026-09-19T08:30:00', time: '8:30 – 10:00 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
-  { date: 'Sunday, September 20', startDateTime: '2026-09-20T10:30:00', time: '10:30 am – 12:30 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
-  { date: 'Saturday, September 26', startDateTime: '2026-09-26T11:30:00', time: '11:30 am – 1:00 pm', site: 'Helping Hands at Sunnyvale Public Library', address: '665 W Olive Ave, Sunnyvale, CA 94086' },
-  { date: 'Saturday, October 3', startDateTime: '2026-10-03T08:30:00', time: '8:30 – 10:00 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
-  { date: 'Sunday, October 4', startDateTime: '2026-10-04T10:30:00', time: '10:30 am – 12:30 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
-  { date: 'Saturday, October 10', startDateTime: '2026-10-10T08:00:00', time: '8:00 – 10:00 am', site: "Hope's Corner", address: '748 Mercy St, Mountain View, CA 94041' },
-  { date: 'Tuesday, October 13', startDateTime: '2026-10-13T18:00:00', time: '6:00 – 7:00 pm', site: 'WeHOPE', address: '1854 Bay Road, East Palo Alto, CA 94303' },
-  { date: 'Saturday, October 17', startDateTime: '2026-10-17T08:30:00', time: '8:30 – 10:00 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
-  { date: 'Sunday, October 18', startDateTime: '2026-10-18T10:30:00', time: '10:30 am – 12:30 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
-  { date: 'Saturday, October 31', startDateTime: '2026-10-31T08:30:00', time: '8:30 – 10:00 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
-  { date: 'Saturday, October 31', startDateTime: '2026-10-31T11:30:00', time: '11:30 am – 1:00 pm', site: 'Helping Hands at Sunnyvale Public Library', address: '665 W Olive Ave, Sunnyvale, CA 94086' },
-  { date: 'Sunday, November 1', startDateTime: '2026-11-01T10:30:00', time: '10:30 am – 12:30 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
-  { date: 'Tuesday, November 10', startDateTime: '2026-11-10T18:00:00', time: '6:00 – 7:00 pm', site: 'WeHOPE', address: '1854 Bay Road, East Palo Alto, CA 94303' },
-  { date: 'Saturday, November 14', startDateTime: '2026-11-14T08:00:00', time: '8:00 – 10:00 am', site: "Hope's Corner", address: '748 Mercy St, Mountain View, CA 94041' },
-  { date: 'Saturday, November 14', startDateTime: '2026-11-14T08:30:00', time: '8:30 – 10:00 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
-  { date: 'Sunday, November 15', startDateTime: '2026-11-15T10:30:00', time: '10:30 am – 12:30 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
-  { date: 'Saturday, November 28', startDateTime: '2026-11-28T08:30:00', time: '8:30 – 10:00 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
-  { date: 'Saturday, November 28', startDateTime: '2026-11-28T11:30:00', time: '11:30 am – 1:00 pm', site: 'Helping Hands at Sunnyvale Public Library', address: '665 W Olive Ave, Sunnyvale, CA 94086' },
-  { date: 'Sunday, November 29', startDateTime: '2026-11-29T10:30:00', time: '10:30 am – 12:30 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
-  { date: 'Tuesday, December 8', startDateTime: '2026-12-08T18:00:00', time: '6:00 – 7:00 pm', site: 'WeHOPE', address: '1854 Bay Road, East Palo Alto, CA 94303' },
-  { date: 'Saturday, December 12', startDateTime: '2026-12-12T08:00:00', time: '8:00 – 10:00 am', site: "Hope's Corner", address: '748 Mercy St, Mountain View, CA 94041' },
-  { date: 'Saturday, December 12', startDateTime: '2026-12-12T08:30:00', time: '8:30 – 10:00 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
-  { date: 'Sunday, December 13', startDateTime: '2026-12-13T10:30:00', time: '10:30 am – 12:30 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
-  { date: 'Saturday, December 26', startDateTime: '2026-12-26T08:30:00', time: '8:30 – 10:00 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
-  { date: 'Saturday, December 26', startDateTime: '2026-12-26T11:30:00', time: '11:30 am – 1:00 pm', site: 'Helping Hands at Sunnyvale Public Library', address: '665 W Olive Ave, Sunnyvale, CA 94086' },
+  { date: 'Saturday, June 27', startDateTime: '2026-06-27T07:45:00', time: '7:45 – 10:45 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
+  { date: 'Saturday, June 27', startDateTime: '2026-06-27T11:00:00', time: '11:00 am – 1:30 pm', site: 'Helping Hands at Sunnyvale Public Library', address: '665 W Olive Ave, Sunnyvale, CA 94086' },
+  { date: 'Sunday, June 28', startDateTime: '2026-06-28T09:40:00', time: '9:40 am – 1:15 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
+  { date: 'Saturday, July 11', startDateTime: '2026-07-11T07:15:00', time: '7:15 – 10:30 am', site: "Hope's Corner", address: '748 Mercy St, Mountain View, CA 94041' },
+  { date: 'Saturday, July 11', startDateTime: '2026-07-11T07:45:00', time: '7:45 – 10:45 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
+  { date: 'Sunday, July 12', startDateTime: '2026-07-12T09:40:00', time: '9:40 am – 1:15 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
+  { date: 'Tuesday, July 14', startDateTime: '2026-07-14T17:15:00', time: '5:15 – 7:45 pm', site: 'WeHOPE', address: '1854 Bay Road, East Palo Alto, CA 94303' },
+  { date: 'Saturday, July 25', startDateTime: '2026-07-25T07:45:00', time: '7:45 – 10:45 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
+  { date: 'Saturday, July 25', startDateTime: '2026-07-25T11:00:00', time: '11:00 am – 1:30 pm', site: 'Helping Hands at Sunnyvale Public Library', address: '665 W Olive Ave, Sunnyvale, CA 94086' },
+  { date: 'Sunday, July 26', startDateTime: '2026-07-26T09:40:00', time: '9:40 am – 1:15 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
+  { date: 'Saturday, August 8', startDateTime: '2026-08-08T07:15:00', time: '7:15 – 10:30 am', site: "Hope's Corner", address: '748 Mercy St, Mountain View, CA 94041' },
+  { date: 'Saturday, August 8', startDateTime: '2026-08-08T07:45:00', time: '7:45 – 10:45 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
+  { date: 'Sunday, August 9', startDateTime: '2026-08-09T09:40:00', time: '9:40 am – 1:15 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
+  { date: 'Tuesday, August 11', startDateTime: '2026-08-11T17:15:00', time: '5:15 – 7:45 pm', site: 'WeHOPE', address: '1854 Bay Road, East Palo Alto, CA 94303' },
+  { date: 'Saturday, August 22', startDateTime: '2026-08-22T07:45:00', time: '7:45 – 10:45 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
+  { date: 'Sunday, August 23', startDateTime: '2026-08-23T09:40:00', time: '9:40 am – 1:15 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
+  { date: 'Saturday, August 29', startDateTime: '2026-08-29T11:00:00', time: '11:00 am – 1:30 pm', site: 'Helping Hands at Sunnyvale Public Library', address: '665 W Olive Ave, Sunnyvale, CA 94086' },
+  { date: 'Saturday, September 5', startDateTime: '2026-09-05T07:45:00', time: '7:45 – 10:45 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
+  { date: 'Sunday, September 6', startDateTime: '2026-09-06T09:40:00', time: '9:40 am – 1:15 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
+  { date: 'Tuesday, September 8', startDateTime: '2026-09-08T17:15:00', time: '5:15 – 7:45 pm', site: 'WeHOPE', address: '1854 Bay Road, East Palo Alto, CA 94303' },
+  { date: 'Saturday, September 12', startDateTime: '2026-09-12T07:15:00', time: '7:15 – 10:30 am', site: "Hope's Corner", address: '748 Mercy St, Mountain View, CA 94041' },
+  { date: 'Saturday, September 19', startDateTime: '2026-09-19T07:45:00', time: '7:45 – 10:45 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
+  { date: 'Sunday, September 20', startDateTime: '2026-09-20T09:40:00', time: '9:40 am – 1:15 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
+  { date: 'Saturday, September 26', startDateTime: '2026-09-26T11:00:00', time: '11:00 am – 1:30 pm', site: 'Helping Hands at Sunnyvale Public Library', address: '665 W Olive Ave, Sunnyvale, CA 94086' },
+  { date: 'Saturday, October 3', startDateTime: '2026-10-03T07:45:00', time: '7:45 – 10:45 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
+  { date: 'Sunday, October 4', startDateTime: '2026-10-04T09:40:00', time: '9:40 am – 1:15 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
+  { date: 'Saturday, October 10', startDateTime: '2026-10-10T07:15:00', time: '7:15 – 10:30 am', site: "Hope's Corner", address: '748 Mercy St, Mountain View, CA 94041' },
+  { date: 'Tuesday, October 13', startDateTime: '2026-10-13T17:15:00', time: '5:15 – 7:45 pm', site: 'WeHOPE', address: '1854 Bay Road, East Palo Alto, CA 94303' },
+  { date: 'Saturday, October 17', startDateTime: '2026-10-17T07:45:00', time: '7:45 – 10:45 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
+  { date: 'Sunday, October 18', startDateTime: '2026-10-18T09:40:00', time: '9:40 am – 1:15 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
+  { date: 'Saturday, October 31', startDateTime: '2026-10-31T07:45:00', time: '7:45 – 10:45 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
+  { date: 'Saturday, October 31', startDateTime: '2026-10-31T11:00:00', time: '11:00 am – 1:30 pm', site: 'Helping Hands at Sunnyvale Public Library', address: '665 W Olive Ave, Sunnyvale, CA 94086' },
+  { date: 'Sunday, November 1', startDateTime: '2026-11-01T09:40:00', time: '9:40 am – 1:15 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
+  { date: 'Tuesday, November 10', startDateTime: '2026-11-10T17:15:00', time: '5:15 – 7:45 pm', site: 'WeHOPE', address: '1854 Bay Road, East Palo Alto, CA 94303' },
+  { date: 'Saturday, November 14', startDateTime: '2026-11-14T07:15:00', time: '7:15 – 10:30 am', site: "Hope's Corner", address: '748 Mercy St, Mountain View, CA 94041' },
+  { date: 'Saturday, November 14', startDateTime: '2026-11-14T07:45:00', time: '7:45 – 10:45 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
+  { date: 'Sunday, November 15', startDateTime: '2026-11-15T09:40:00', time: '9:40 am – 1:15 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
+  { date: 'Saturday, November 28', startDateTime: '2026-11-28T07:45:00', time: '7:45 – 10:45 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
+  { date: 'Saturday, November 28', startDateTime: '2026-11-28T11:00:00', time: '11:00 am – 1:30 pm', site: 'Helping Hands at Sunnyvale Public Library', address: '665 W Olive Ave, Sunnyvale, CA 94086' },
+  { date: 'Sunday, November 29', startDateTime: '2026-11-29T09:40:00', time: '9:40 am – 1:15 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
+  { date: 'Tuesday, December 8', startDateTime: '2026-12-08T17:15:00', time: '5:15 – 7:45 pm', site: 'WeHOPE', address: '1854 Bay Road, East Palo Alto, CA 94303' },
+  { date: 'Saturday, December 12', startDateTime: '2026-12-12T07:15:00', time: '7:15 – 10:30 am', site: "Hope's Corner", address: '748 Mercy St, Mountain View, CA 94041' },
+  { date: 'Saturday, December 12', startDateTime: '2026-12-12T07:45:00', time: '7:45 – 10:45 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
+  { date: 'Sunday, December 13', startDateTime: '2026-12-13T09:40:00', time: '9:40 am – 1:15 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
+  { date: 'Saturday, December 26', startDateTime: '2026-12-26T07:45:00', time: '7:45 – 10:45 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
+  { date: 'Saturday, December 26', startDateTime: '2026-12-26T11:00:00', time: '11:00 am – 1:30 pm', site: 'Helping Hands at Sunnyvale Public Library', address: '665 W Olive Ave, Sunnyvale, CA 94086' },
 ];
 
 const MD_PA_PRIORITY_SITES = ["Hope's Corner", 'Neighborhood Hands', 'Helping Hands at Sunnyvale Public Library'];
@@ -272,7 +272,7 @@ export default function VolunteerSignUp() {
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <h2 className="text-lg font-semibold text-gray-800 mb-1">Select Shifts</h2>
               <p className="text-xs text-gray-500 mb-3">
-                Transportation is provided from Li Ka Shing Center (LKSC). It's okay if you can only make part of a shift.
+                Times shown are meet/return at Li Ka Shing Center (LKSC). Transportation to the site is provided. It's okay if you can only make part of a shift.
               </p>
               <div className="space-y-2 max-h-80 overflow-y-auto border border-gray-100 rounded-lg p-3">
                 {availableShifts.length === 0 && (
@@ -292,7 +292,7 @@ export default function VolunteerSignUp() {
                         {tag && (
                           <span className={`ml-2 text-xs font-semibold px-2 py-0.5 rounded-full ${tag.color}`}>{tag.text}</span>
                         )}
-                        <div className="text-xs text-gray-500">{shift.time} · {shift.address}</div>
+                        <div className="text-xs text-gray-500">LKSC {shift.time} · {shift.address}</div>
                       </div>
                     </label>
                   );
