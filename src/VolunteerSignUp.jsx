@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { HiCheckCircle, HiExclamationCircle, HiInformationCircle } from 'react-icons/hi';
 
 const SCRIPT_URL = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
@@ -52,9 +52,21 @@ const allShifts = [
   { date: 'Saturday, December 26', startDateTime: '2026-12-26T11:00:00', time: '11:00 am – 1:30 pm', site: 'Helping Hands at Sunnyvale Public Library', address: '665 W Olive Ave, Sunnyvale, CA 94086' },
 ];
 
+const SITE_CAPACITY = {
+  "Hope's Corner": { drivers: 2, nonDrivers: 3 },
+  "Neighborhood Hands": { drivers: 3, nonDrivers: 3 },
+  "Helping Hands at Sunnyvale Public Library": { drivers: 3, nonDrivers: 3 },
+  "Hope for the Unhoused": { drivers: 3, nonDrivers: 3 },
+  "WeHOPE": { drivers: 2, nonDrivers: 3 },
+};
+
 const MD_PA_PRIORITY_SITES = ["Hope's Corner", 'Neighborhood Hands', 'Helping Hands at Sunnyvale Public Library'];
 const MANDARIN_ONLY_SITE = "Hope's Corner";
 const SPANISH_PRIORITY_SITES = ['Neighborhood Hands', 'Hope for the Unhoused'];
+
+function shiftKey(shift) {
+  return `${shift.date}|${shift.site}`;
+}
 
 function getSiteTag(shift, form) {
   const isMdPa = form.studentType === 'md' || form.studentType === 'pa';
@@ -91,10 +103,22 @@ export default function VolunteerSignUp() {
     studentType: '',
     smopFellow: false,
     languages: [],
+    canDrive: false,
+    hasBadgeAccess: false,
+    isEventLead: false,
     shifts: [],
     notes: '',
   });
   const [status, setStatus] = useState('idle');
+  const [shiftData, setShiftData] = useState({});
+
+  useEffect(() => {
+    if (!SCRIPT_URL) return;
+    fetch(`${SCRIPT_URL}?type=volunteer-counts`)
+      .then(res => res.json())
+      .then(data => setShiftData(data.shifts || {}))
+      .catch(() => {});
+  }, []);
 
   const now = Date.now();
   const futureShifts = allShifts.filter(s => new Date(s.startDateTime).getTime() > now);
@@ -120,6 +144,29 @@ export default function VolunteerSignUp() {
     }));
   };
 
+  function getShiftStatus(shift) {
+    const key = shiftKey(shift);
+    const data = shiftData[key] || { drivers: 0, nonDrivers: 0, eventLead: '' };
+    const cap = SITE_CAPACITY[shift.site] || { drivers: 3, nonDrivers: 3 };
+    return { ...data, capDrivers: cap.drivers, capNonDrivers: cap.nonDrivers };
+  }
+
+  function isShiftFull(shift) {
+    const s = getShiftStatus(shift);
+    if (form.canDrive) {
+      return s.drivers >= s.capDrivers && s.nonDrivers >= s.capNonDrivers;
+    }
+    return s.nonDrivers >= s.capNonDrivers && s.drivers >= s.capDrivers;
+  }
+
+  function getSlotForUser(shift) {
+    const s = getShiftStatus(shift);
+    if (form.canDrive && s.drivers < s.capDrivers) return 'driver';
+    if (s.nonDrivers < s.capNonDrivers) return 'non-driver';
+    if (form.canDrive && s.drivers < s.capDrivers) return 'driver';
+    return null;
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus('submitting');
@@ -138,6 +185,9 @@ export default function VolunteerSignUp() {
           studentType: form.studentType,
           smopFellow: form.smopFellow,
           languages: form.languages,
+          canDrive: form.canDrive,
+          hasBadgeAccess: form.hasBadgeAccess,
+          isEventLead: form.isEventLead,
           shifts: shiftsFormatted,
           notes: form.notes,
         }),
@@ -171,7 +221,7 @@ export default function VolunteerSignUp() {
               Questions? Email <a href="mailto:stanford.h.outreach@gmail.com" className="text-cardinal hover:underline">stanford.h.outreach@gmail.com</a>
             </p>
             <button
-              onClick={() => { setStatus('idle'); setForm({ name: '', email: '', phone: '', studentType: '', smopFellow: false, languages: [], shifts: [], notes: '' }); }}
+              onClick={() => { setStatus('idle'); setForm({ name: '', email: '', phone: '', studentType: '', smopFellow: false, languages: [], canDrive: false, hasBadgeAccess: false, isEventLead: false, shifts: [], notes: '' }); }}
               className="mt-6 text-sm text-cardinal font-semibold hover:underline"
             >
               Sign up for more shifts
@@ -251,6 +301,54 @@ export default function VolunteerSignUp() {
               </div>
             </div>
 
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
+              <h2 className="text-lg font-semibold text-gray-800">Logistics</h2>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="flex items-start gap-2 text-sm text-gray-700 cursor-pointer">
+                    <input
+                      type="checkbox" checked={form.canDrive}
+                      onChange={e => setForm(f => ({ ...f, canDrive: e.target.checked, shifts: [] }))}
+                      className="accent-cardinal mt-0.5"
+                    />
+                    <div>
+                      <span className="font-medium">I can drive other volunteers to the site</span>
+                      <p className="text-xs text-gray-500 mt-0.5">You must bring your own vehicle. We are very low on volunteer drivers and really need your help!</p>
+                    </div>
+                  </label>
+                </div>
+
+                <div>
+                  <label className="flex items-start gap-2 text-sm text-gray-700 cursor-pointer">
+                    <input
+                      type="checkbox" checked={form.hasBadgeAccess}
+                      onChange={e => setForm(f => ({ ...f, hasBadgeAccess: e.target.checked }))}
+                      className="accent-cardinal mt-0.5"
+                    />
+                    <div>
+                      <span className="font-medium">I have badge access to the 4th floor of LKSC</span>
+                      <p className="text-xs text-gray-500 mt-0.5">MD/PA students, REACH postbaccs, biosciences PhD and masters students typically have access. If you do, please bring your badge!</p>
+                    </div>
+                  </label>
+                </div>
+
+                <div>
+                  <label className="flex items-start gap-2 text-sm text-gray-700 cursor-pointer">
+                    <input
+                      type="checkbox" checked={form.isEventLead}
+                      onChange={e => setForm(f => ({ ...f, isEventLead: e.target.checked }))}
+                      className="accent-cardinal mt-0.5"
+                    />
+                    <div>
+                      <span className="font-medium">I am signing up as the Event Lead</span>
+                      <p className="text-xs text-red-600 mt-0.5">Only sign up for this if you have been specifically trained as an event lead. First come, first served.</p>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
             {showMandarinNotice && (
               <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
                 <HiInformationCircle className="text-amber-600 shrink-0 mt-0.5" size={18} />
@@ -274,27 +372,53 @@ export default function VolunteerSignUp() {
               <p className="text-xs text-gray-500 mb-3">
                 Times shown are meet/return at Li Ka Shing Center (LKSC). Transportation to the site is provided. It's okay if you can only make part of a shift.
               </p>
-              <div className="space-y-2 max-h-80 overflow-y-auto border border-gray-100 rounded-lg p-3">
+              <div className="space-y-2 max-h-96 overflow-y-auto border border-gray-100 rounded-lg p-3">
                 {availableShifts.length === 0 && (
                   <p className="text-gray-500 text-sm italic py-4 text-center">No shifts available. Please check back soon.</p>
                 )}
                 {availableShifts.map((shift, i) => {
                   const tag = getSiteTag(shift, form);
+                  const s = getShiftStatus(shift);
+                  const full = isShiftFull(shift);
+                  const slot = getSlotForUser(shift);
+                  const hasEventLead = !!s.eventLead;
+
                   return (
-                    <label key={i} className="flex items-start gap-2 text-sm text-gray-700 cursor-pointer hover:bg-gray-50 rounded px-2 py-1.5">
-                      <input
-                        type="checkbox" checked={form.shifts.includes(i)}
-                        onChange={() => handleShiftToggle(i)}
-                        className="accent-cardinal mt-0.5"
-                      />
-                      <div>
-                        <span className="font-medium">{shift.date}</span> — {shift.site}
-                        {tag && (
-                          <span className={`ml-2 text-xs font-semibold px-2 py-0.5 rounded-full ${tag.color}`}>{tag.text}</span>
-                        )}
-                        <div className="text-xs text-gray-500">LKSC {shift.time} · {shift.address}</div>
-                      </div>
-                    </label>
+                    <div key={i} className={`rounded px-2 py-2 ${full && !form.shifts.includes(i) ? 'opacity-50' : 'hover:bg-gray-50'}`}>
+                      <label className={`flex items-start gap-2 text-sm text-gray-700 ${full && !form.shifts.includes(i) ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+                        <input
+                          type="checkbox" checked={form.shifts.includes(i)}
+                          onChange={() => handleShiftToggle(i)}
+                          disabled={full && !form.shifts.includes(i)}
+                          className="accent-cardinal mt-0.5"
+                        />
+                        <div className="flex-1">
+                          <div>
+                            <span className="font-medium">{shift.date}</span> — {shift.site}
+                            {tag && (
+                              <span className={`ml-2 text-xs font-semibold px-2 py-0.5 rounded-full ${tag.color}`}>{tag.text}</span>
+                            )}
+                            {full && (
+                              <span className="ml-2 text-xs font-semibold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">Full</span>
+                            )}
+                          </div>
+                          <div className="text-xs text-gray-500">LKSC {shift.time} · {shift.address}</div>
+                          <div className="flex flex-wrap gap-3 mt-1">
+                            <span className={`text-xs ${s.drivers >= s.capDrivers ? 'text-orange-600' : 'text-gray-400'}`}>
+                              Drivers: {s.drivers}/{s.capDrivers}
+                            </span>
+                            <span className={`text-xs ${s.nonDrivers >= s.capNonDrivers ? 'text-orange-600' : 'text-gray-400'}`}>
+                              Non-drivers: {s.nonDrivers}/{s.capNonDrivers}
+                            </span>
+                            {hasEventLead ? (
+                              <span className="text-xs text-green-700">{s.eventLead} is the event lead</span>
+                            ) : (
+                              <span className="text-xs text-gray-400">Event lead: open</span>
+                            )}
+                          </div>
+                        </div>
+                      </label>
+                    </div>
                   );
                 })}
               </div>
