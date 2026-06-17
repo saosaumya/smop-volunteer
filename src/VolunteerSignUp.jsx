@@ -370,7 +370,7 @@ export default function VolunteerSignUp() {
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <h2 className="text-lg font-semibold text-gray-800 mb-1">Select Shifts</h2>
               <p className="text-xs text-gray-500 mb-3">
-                Times shown are meet/return at Li Ka Shing Center (LKSC). Transportation to the site is provided. It's okay if you can only make part of a shift.
+                Times shown are meet/return at Li Ka Shing Center (LKSC). Transportation to the site is provided.
               </p>
               <div className="space-y-2 max-h-96 overflow-y-auto border border-gray-100 rounded-lg p-3">
                 {availableShifts.length === 0 && (
