@@ -430,7 +430,7 @@ export default function VolunteerSignUp() {
                 value={form.notes} rows={2}
                 onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cardinal/30 focus:border-cardinal"
-                placeholder="Anything else we should know? (e.g. other languages, affiliations, dietary needs for snacks)"
+                placeholder="Anything else we should know? (e.g. other languages, affiliations)"
               />
             </div>
 
