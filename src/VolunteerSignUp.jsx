@@ -173,6 +173,13 @@ export default function VolunteerSignUp() {
     try {
       const selectedShifts = form.shifts.map(i => availableShifts[i]);
       const shiftsFormatted = selectedShifts.map(s => `${s.date} — ${s.site} (${s.time}, ${s.address})`);
+      const shiftsStructured = selectedShifts.map(s => ({
+        date: s.date,
+        startDateTime: s.startDateTime,
+        time: s.time,
+        site: s.site,
+        address: s.address,
+      }));
       await fetch(SCRIPT_URL, {
         method: 'POST',
         mode: 'no-cors',
@@ -189,6 +196,7 @@ export default function VolunteerSignUp() {
           hasBadgeAccess: form.hasBadgeAccess,
           isEventLead: form.isEventLead,
           shifts: shiftsFormatted,
+          shiftsStructured: shiftsStructured,
           notes: form.notes,
         }),
       });
@@ -214,8 +222,17 @@ export default function VolunteerSignUp() {
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
             <HiCheckCircle className="mx-auto text-green-600 mb-3" size={48} />
             <h2 className="text-xl font-semibold text-gray-800 mb-2">You're signed up!</h2>
+            <p className="text-gray-600 text-sm mb-3">
+              A calendar invite has been sent to your email — it should appear on your calendar automatically.
+            </p>
+            <p className="text-gray-600 text-sm mb-3">
+              You'll receive reminder emails at 1 week, 3 days, and 1 day before each shift.
+            </p>
             <p className="text-gray-600 text-sm mb-4">
-              Thank you for volunteering. A coordinator will be in touch before the event with details about transportation from LKSC and what to bring.
+              A coordinator will also be in touch before the event with details about transportation from LKSC and what to bring.
+            </p>
+            <p className="text-gray-600 text-sm mb-4">
+              Need to cancel a shift? Email SMOP volunteer coordinator <a href="mailto:jghazal@stanford.edu" className="text-cardinal hover:underline">jghazal@stanford.edu</a>.
             </p>
             <p className="text-gray-500 text-xs">
               Questions? Email <a href="mailto:stanford.h.outreach@gmail.com" className="text-cardinal hover:underline">stanford.h.outreach@gmail.com</a>
@@ -383,6 +400,8 @@ export default function VolunteerSignUp() {
                   const slot = getSlotForUser(shift);
                   const hasEventLead = !!s.eventLead;
 
+                  const hasPeople = (s.driverList && s.driverList.length > 0) || (s.nonDriverList && s.nonDriverList.length > 0);
+
                   return (
                     <div key={i} className={`rounded px-2 py-2 ${full && !form.shifts.includes(i) ? 'opacity-50' : 'hover:bg-gray-50'}`}>
                       <label className={`flex items-start gap-2 text-sm text-gray-700 ${full && !form.shifts.includes(i) ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
@@ -415,7 +434,38 @@ export default function VolunteerSignUp() {
                             ) : (
                               <span className="text-xs text-gray-400">Event lead: open</span>
                             )}
+                            {s.badgeHolders && s.badgeHolders.length > 0 && (
+                              <span className="text-xs text-indigo-600">Badge: {s.badgeHolders.join(', ')}</span>
+                            )}
                           </div>
+                          {(hasPeople || (s.clinicians && s.clinicians.length > 0)) && (
+                            <div className="mt-1.5 text-xs text-gray-500 border-t border-gray-100 pt-1.5 space-y-0.5">
+                              {s.driverList && s.driverList.length > 0 && (
+                                <div>
+                                  <span className="font-medium text-gray-600">Drivers:</span>{' '}
+                                  {s.driverList.map((p, j) => (
+                                    <span key={j}>{p.name}{p.phone ? ` (${p.phone})` : ''}{j < s.driverList.length - 1 ? ', ' : ''}</span>
+                                  ))}
+                                </div>
+                              )}
+                              {s.nonDriverList && s.nonDriverList.length > 0 && (
+                                <div>
+                                  <span className="font-medium text-gray-600">Non-drivers:</span>{' '}
+                                  {s.nonDriverList.map((p, j) => (
+                                    <span key={j}>{p.name}{p.phone ? ` (${p.phone})` : ''}{j < s.nonDriverList.length - 1 ? ', ' : ''}</span>
+                                  ))}
+                                </div>
+                              )}
+                              {s.clinicians && s.clinicians.length > 0 && (
+                                <div>
+                                  <span className="font-medium text-green-700">Clinician:</span>{' '}
+                                  {s.clinicians.map((c, j) => (
+                                    <span key={j} className="text-green-700">{c.name}{c.role ? ` (${c.role})` : ''}{c.phone ? ` — ${c.phone}` : ''}{j < s.clinicians.length - 1 ? ', ' : ''}</span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </label>
                     </div>
