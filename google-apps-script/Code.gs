@@ -214,6 +214,7 @@ function doGet(e) {
         var isLead = data[i][11];
         var name = data[i][1];
         var phone = data[i][3] || '';
+        var languages = String(data[i][6] || '').toLowerCase();
         if (!shiftsCell) continue;
         var shiftLines = String(shiftsCell).split('\n');
         shiftLines.forEach(function(line) {
@@ -223,8 +224,11 @@ function doGet(e) {
           var siteMatch = line.match(/—\s+(.+?)\s+\(/);
           if (dateMatch && siteMatch) {
             var key = dateMatch[1] + '|' + siteMatch[1];
-            if (!result[key]) result[key] = { drivers: 0, nonDrivers: 0, eventLead: '', driverList: [], nonDriverList: [], badgeHolders: [], clinicians: [] };
+            if (!result[key]) result[key] = { drivers: 0, nonDrivers: 0, eventLead: '', driverList: [], nonDriverList: [], badgeHolders: [], clinicians: [], mandarinCount: 0 };
             var person = { name: name, phone: String(phone) };
+            if (languages.indexOf('mandarin') !== -1) {
+              result[key].mandarinCount++;
+            }
             if (canDrive === true || canDrive === 'true' || canDrive === 'TRUE') {
               result[key].drivers++;
               result[key].driverList.push(person);

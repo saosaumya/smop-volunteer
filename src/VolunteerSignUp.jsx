@@ -153,10 +153,13 @@ export default function VolunteerSignUp() {
 
   function isShiftFull(shift) {
     const s = getShiftStatus(shift);
-    if (form.canDrive) {
-      return s.drivers >= s.capDrivers && s.nonDrivers >= s.capNonDrivers;
+    const normallyFull = form.canDrive
+      ? s.drivers >= s.capDrivers && s.nonDrivers >= s.capNonDrivers
+      : s.nonDrivers >= s.capNonDrivers && s.drivers >= s.capDrivers;
+    if (normallyFull && form.languages.includes('mandarin') && shift.site === MANDARIN_ONLY_SITE && !(s.mandarinCount > 0)) {
+      return false;
     }
-    return s.nonDrivers >= s.capNonDrivers && s.drivers >= s.capDrivers;
+    return normallyFull;
   }
 
   function getSlotForUser(shift) {
