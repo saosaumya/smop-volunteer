@@ -505,6 +505,7 @@ function sendReminders_(sheetName, type) {
 
   var data = sheet.getDataRange().getValues();
   var now = new Date();
+  var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   var oneDay = 24 * 60 * 60 * 1000;
 
   var isClinician = (type === 'clinician');
@@ -515,11 +516,12 @@ function sendReminders_(sheetName, type) {
     var name = data[i][1];
     var shiftText = data[i][2];
     var shiftDate = new Date(data[i][3]);
+    var shiftDay = new Date(shiftDate.getFullYear(), shiftDate.getMonth(), shiftDate.getDate());
     var sent7 = data[i][4];
     var sent3 = data[i][5];
     var sent1 = data[i][6];
 
-    var daysUntil = Math.floor((shiftDate.getTime() - now.getTime()) / oneDay);
+    var daysUntil = Math.round((shiftDay.getTime() - today.getTime()) / oneDay);
 
     var reminderBody = null;
     var reminderSubject = null;
