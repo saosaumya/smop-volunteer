@@ -126,6 +126,7 @@ export default function VolunteerSignUp() {
   const futureShifts = allShifts.filter(s => new Date(s.startDateTime).getTime() > now);
   const pastShifts = allShifts.filter(s => new Date(s.startDateTime).getTime() <= now);
   const [showPast, setShowPast] = useState(false);
+  const [showCoordinator, setShowCoordinator] = useState(false);
 
   const availableShifts = useMemo(() => {
     return futureShifts.filter(shift => isShiftAllowed(shift, form));
@@ -227,7 +228,7 @@ export default function VolunteerSignUp() {
   const showMandarinNotice = form.languages.includes('mandarin') && !form.smopFellow;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="bg-gray-50">
       <div className="bg-gradient-to-br from-cardinal to-cardinal-dark text-white py-12">
         <div className="max-w-2xl mx-auto px-4">
           <h1 className="text-3xl font-bold mb-2">Stanford Medicine Outreach Program</h1>
@@ -451,53 +452,28 @@ export default function VolunteerSignUp() {
                             )}
                           </div>
                           <div className="text-xs text-gray-500">LKSC {shift.time} · {shift.address}</div>
-                          <div className="flex flex-wrap gap-3 mt-1">
-                            <span className={`text-xs ${s.drivers >= s.capDrivers ? 'text-orange-600' : 'text-gray-400'}`}>
-                              Drivers: {s.drivers}/{s.capDrivers}
-                            </span>
-                            <span className={`text-xs ${s.nonDrivers >= getUserNonDriverCap(shift) ? 'text-orange-600' : 'text-gray-400'}`}>
-                              Non-drivers: {s.nonDrivers}/{s.effectiveNonDriverCap}
-                              {s.effectiveNonDriverCap < s.capNonDrivers && (
-                                <span className="text-red-500 font-semibold"> (need more drivers)</span>
-                              )}
-                              {getUserNonDriverCap(shift) < s.effectiveNonDriverCap && (
-                                <span className="text-purple-600 font-semibold"> (1 spot reserved for MD/PA)</span>
-                              )}
-                            </span>
-                            {hasEventLead ? (
-                              <span className="text-xs text-green-700">{s.eventLead} is the event lead</span>
-                            ) : (
-                              <span className="text-xs text-gray-400">Event lead: open</span>
+                          <div className="text-xs text-gray-400 mt-1">
+                            Spots: {s.drivers + s.nonDrivers}/{s.capDrivers + s.capNonDrivers} filled
+                            {s.effectiveNonDriverCap < s.capNonDrivers && (
+                              <span className="text-red-500 font-semibold"> (need more drivers)</span>
                             )}
-                            {s.badgeHolders && s.badgeHolders.length > 0 ? (
-                              <span className="text-xs text-indigo-600">Badge: {s.badgeHolders.join(', ')}</span>
-                            ) : (s.drivers + s.nonDrivers) > 0 ? (
-                              <span className="text-xs font-bold text-red-600">⚠ NO BADGE ACCESS — must be resolved before event day</span>
-                            ) : null}
+                            {getUserNonDriverCap(shift) < s.effectiveNonDriverCap && (
+                              <span className="text-purple-600 font-semibold"> (1 spot reserved for MD/PA)</span>
+                            )}
                           </div>
                           {(hasPeople || (s.clinicians && s.clinicians.length > 0)) && (
                             <div className="mt-1.5 text-xs text-gray-500 border-t border-gray-100 pt-1.5 space-y-0.5">
-                              {s.driverList && s.driverList.length > 0 && (
-                                <div>
-                                  <span className="font-medium text-gray-600">Drivers:</span>{' '}
-                                  {s.driverList.map((p, j) => (
-                                    <span key={j}>{p.name}{p.studentType ? ` [${STUDENT_TYPE_LABELS[p.studentType] || p.studentType}]` : ''}{p.phone ? ` (${p.phone})` : ''}{j < s.driverList.length - 1 ? ', ' : ''}</span>
-                                  ))}
-                                </div>
-                              )}
-                              {s.nonDriverList && s.nonDriverList.length > 0 && (
-                                <div>
-                                  <span className="font-medium text-gray-600">Non-drivers:</span>{' '}
-                                  {s.nonDriverList.map((p, j) => (
-                                    <span key={j}>{p.name}{p.studentType ? ` [${STUDENT_TYPE_LABELS[p.studentType] || p.studentType}]` : ''}{p.phone ? ` (${p.phone})` : ''}{j < s.nonDriverList.length - 1 ? ', ' : ''}</span>
-                                  ))}
-                                </div>
-                              )}
+                              <div>
+                                <span className="font-medium text-gray-600">Signed up:</span>{' '}
+                                {[...(s.driverList || []), ...(s.nonDriverList || [])].map((p, j, arr) => (
+                                  <span key={j}>{p.name}{j < arr.length - 1 ? ', ' : ''}</span>
+                                ))}
+                              </div>
                               {s.clinicians && s.clinicians.length > 0 && (
                                 <div>
                                   <span className="font-medium text-green-700">Clinician:</span>{' '}
                                   {s.clinicians.map((c, j) => (
-                                    <span key={j} className="text-green-700">{c.name}{c.role ? ` (${c.role})` : ''}{c.phone ? ` — ${c.phone}` : ''}{j < s.clinicians.length - 1 ? ', ' : ''}</span>
+                                    <span key={j} className="text-green-700">{c.name}{j < s.clinicians.length - 1 ? ', ' : ''}</span>
                                   ))}
                                 </div>
                               )}
@@ -509,6 +485,74 @@ export default function VolunteerSignUp() {
                   );
                 })}
               </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+              <button
+                type="button"
+                onClick={() => setShowCoordinator(!showCoordinator)}
+                className="text-sm text-gray-700 hover:text-gray-900 font-semibold flex items-center gap-2 w-full"
+              >
+                {showCoordinator ? '▾' : '▸'} Coordinator / Event Lead View
+              </button>
+              {showCoordinator && (
+                <div className="mt-2 bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3 max-h-96 overflow-y-auto">
+                  {availableShifts.map((shift, i) => {
+                    const s = getShiftStatus(shift);
+                    const hasPeople = (s.driverList && s.driverList.length > 0) || (s.nonDriverList && s.nonDriverList.length > 0);
+                    if (!hasPeople && !(s.clinicians && s.clinicians.length > 0)) return null;
+                    return (
+                      <div key={i} className="bg-white rounded-lg border border-gray-100 p-3">
+                        <div className="text-sm font-medium text-gray-800">{shift.date} — {shift.site}</div>
+                        <div className="flex flex-wrap gap-3 mt-1">
+                          <span className={`text-xs ${s.drivers >= s.capDrivers ? 'text-orange-600' : 'text-gray-400'}`}>
+                            Drivers: {s.drivers}/{s.capDrivers}
+                          </span>
+                          <span className={`text-xs ${s.nonDrivers >= s.effectiveNonDriverCap ? 'text-orange-600' : 'text-gray-400'}`}>
+                            Non-drivers: {s.nonDrivers}/{s.effectiveNonDriverCap}
+                          </span>
+                          {s.eventLead ? (
+                            <span className="text-xs text-green-700">{s.eventLead} is the event lead</span>
+                          ) : (
+                            <span className="text-xs text-gray-400">Event lead: open</span>
+                          )}
+                          {s.badgeHolders && s.badgeHolders.length > 0 ? (
+                            <span className="text-xs text-indigo-600">Badge: {s.badgeHolders.join(', ')}</span>
+                          ) : (s.drivers + s.nonDrivers) > 0 ? (
+                            <span className="text-xs font-bold text-red-600">⚠ NO BADGE ACCESS — must be resolved before event day</span>
+                          ) : null}
+                        </div>
+                        <div className="mt-1.5 text-xs text-gray-500 border-t border-gray-100 pt-1.5 space-y-0.5">
+                          {s.driverList && s.driverList.length > 0 && (
+                            <div>
+                              <span className="font-medium text-gray-600">Drivers:</span>{' '}
+                              {s.driverList.map((p, j) => (
+                                <span key={j}>{p.name}{p.studentType ? ` [${STUDENT_TYPE_LABELS[p.studentType] || p.studentType}]` : ''}{p.phone ? ` (${p.phone})` : ''}{j < s.driverList.length - 1 ? ', ' : ''}</span>
+                              ))}
+                            </div>
+                          )}
+                          {s.nonDriverList && s.nonDriverList.length > 0 && (
+                            <div>
+                              <span className="font-medium text-gray-600">Non-drivers:</span>{' '}
+                              {s.nonDriverList.map((p, j) => (
+                                <span key={j}>{p.name}{p.studentType ? ` [${STUDENT_TYPE_LABELS[p.studentType] || p.studentType}]` : ''}{p.phone ? ` (${p.phone})` : ''}{j < s.nonDriverList.length - 1 ? ', ' : ''}</span>
+                              ))}
+                            </div>
+                          )}
+                          {s.clinicians && s.clinicians.length > 0 && (
+                            <div>
+                              <span className="font-medium text-green-700">Clinician:</span>{' '}
+                              {s.clinicians.map((c, j) => (
+                                <span key={j} className="text-green-700">{c.name}{c.role ? ` (${c.role})` : ''}{c.phone ? ` — ${c.phone}` : ''}{j < s.clinicians.length - 1 ? ', ' : ''}</span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
