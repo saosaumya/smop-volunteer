@@ -124,13 +124,17 @@ export default function VolunteerSignUp() {
   }, []);
 
   const now = Date.now();
+  const SIGNUPS_HIDDEN_BEFORE = new Date('2026-07-27T00:00:00').getTime();
   const futureShifts = allShifts.filter(s => new Date(s.startDateTime).getTime() > now);
+  const hiddenShifts = futureShifts.filter(s => new Date(s.startDateTime).getTime() < SIGNUPS_HIDDEN_BEFORE);
   const pastShifts = allShifts.filter(s => new Date(s.startDateTime).getTime() <= now);
   const [showPast, setShowPast] = useState(false);
   const [showCoordinator, setShowCoordinator] = useState(false);
 
   const availableShifts = useMemo(() => {
-    return futureShifts.filter(shift => isShiftAllowed(shift, form));
+    return futureShifts
+      .filter(s => new Date(s.startDateTime).getTime() >= SIGNUPS_HIDDEN_BEFORE)
+      .filter(shift => isShiftAllowed(shift, form));
   }, [futureShifts, form.languages, form.smopFellow]);
 
   const handleLanguageToggle = (lang) => {
@@ -496,7 +500,7 @@ export default function VolunteerSignUp() {
               </button>
               {showCoordinator && (
                 <div className="mt-2 bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3 max-h-96 overflow-y-auto">
-                  {availableShifts.map((shift, i) => {
+                  {futureShifts.map((shift, i) => {
                     const s = getShiftStatus(shift);
                     const hasPeople = (s.driverList && s.driverList.length > 0) || (s.nonDriverList && s.nonDriverList.length > 0);
                     if (!hasPeople && !(s.clinicians && s.clinicians.length > 0)) return null;
