@@ -112,6 +112,7 @@ export default function VolunteerSignUp() {
     notes: '',
   });
   const [status, setStatus] = useState('idle');
+  const [capacityError, setCapacityError] = useState('');
   const [shiftData, setShiftData] = useState({});
 
   useEffect(() => {
@@ -189,6 +190,7 @@ export default function VolunteerSignUp() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus('submitting');
+    setCapacityError('');
     try {
       const selectedShifts = form.shifts.map(i => availableShifts[i]);
       const shiftsFormatted = selectedShifts.map(s => `${s.date} — ${s.site} (${s.time}, ${s.address})`);
@@ -199,10 +201,9 @@ export default function VolunteerSignUp() {
         site: s.site,
         address: s.address,
       }));
-      await fetch(SCRIPT_URL, {
+      const res = await fetch(SCRIPT_URL, {
         method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify({
           type: 'student-volunteer',
           name: form.name,
@@ -219,7 +220,13 @@ export default function VolunteerSignUp() {
           notes: form.notes,
         }),
       });
-      setStatus('success');
+      const result = await res.json();
+      if (result.status === 'error') {
+        setCapacityError(result.message);
+        setStatus('idle');
+      } else {
+        setStatus('success');
+      }
     } catch {
       setStatus('error');
     }
@@ -564,6 +571,17 @@ export default function VolunteerSignUp() {
                 placeholder="Anything else we should know? (e.g. other languages, affiliations)"
               />
             </div>
+
+            {capacityError && (
+              <div className="flex items-start gap-2 text-red-600 bg-red-50 px-4 py-3 rounded-lg text-sm">
+                <HiExclamationCircle size={18} className="shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold">Shift is full</p>
+                  <p>{capacityError}</p>
+                  <p className="mt-1 text-xs text-red-500">Please refresh the page and try a different shift.</p>
+                </div>
+              </div>
+            )}
 
             {status === 'error' && (
               <div className="flex items-center gap-2 text-red-600 bg-red-50 px-4 py-3 rounded-lg text-sm">

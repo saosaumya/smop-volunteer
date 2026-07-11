@@ -88,6 +88,13 @@ function doPost(e) {
     var shifts = Array.isArray(data.shifts) ? data.shifts.join('\n') : String(data.shifts);
     var languages = Array.isArray(data.languages) ? data.languages.join(', ') : String(data.languages || '');
 
+    // --- Server-side capacity validation ---
+    var capacityError = validateVolunteerCapacity_(sheet, data);
+    if (capacityError) {
+      return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: capacityError }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     sheet.appendRow([
       new Date(),
       data.name,
@@ -587,6 +594,105 @@ function sendReminders_(sheetName, type) {
       }
     }
   }
+}
+
+function validateVolunteerCapacity_(sheet, data) {
+  var SITE_CAPACITY = {
+    "Hope's Corner": { drivers: 2, nonDrivers: 3 },
+    "Neighborhood Hands": { drivers: 3, nonDrivers: 3 },
+    "Helping Hands at Sunnyvale Public Library": { drivers: 3, nonDrivers: 3 },
+    "Hope for the Unhoused": { drivers: 3, nonDrivers: 3 },
+    "WeHOPE": { drivers: 2, nonDrivers: 3 }
+  };
+  var MD_PA_PRIORITY_SITES = ["Hope's Corner", "Neighborhood Hands", "Helping Hands at Sunnyvale Public Library"];
+  var MANDARIN_ONLY_SITE = "Hope's Corner";
+
+  // Build current counts per shift from existing sheet data
+  var counts = {};
+  var rows = sheet.getDataRange().getValues();
+  for (var i = 1; i < rows.length; i++) {
+    var shiftsCell = rows[i][7];
+    var rowCanDrive = rows[i][9];
+    var rowStudentType = String(rows[i][4] || '').toLowerCase();
+    var rowLanguages = String(rows[i][6] || '').toLowerCase();
+    if (!shiftsCell) continue;
+    var lines = String(shiftsCell).split('\n');
+    lines.forEach(function(line) {
+      line = line.trim();
+      if (!line) return;
+      var dateMatch = line.match(/^([A-Za-z]+,\s+[A-Za-z]+\s+\d+)/);
+      var siteMatch = line.match(/—\s+(.+?)\s+\(/);
+      if (dateMatch && siteMatch) {
+        var key = dateMatch[1] + '|' + siteMatch[1];
+        if (!counts[key]) counts[key] = { drivers: 0, nonDrivers: 0, mdPaCount: 0, mandarinCount: 0 };
+        if (rowCanDrive === true || rowCanDrive === 'true' || rowCanDrive === 'TRUE') {
+          counts[key].drivers++;
+        } else {
+          counts[key].nonDrivers++;
+        }
+        if (rowStudentType === 'md' || rowStudentType === 'pa') counts[key].mdPaCount++;
+        if (rowLanguages.indexOf('mandarin') !== -1) counts[key].mandarinCount++;
+      }
+    });
+  }
+
+  // Validate each shift the volunteer is signing up for
+  var shiftLines = Array.isArray(data.shifts) ? data.shifts : [String(data.shifts)];
+  var canDrive = data.canDrive === true || data.canDrive === 'true';
+  var studentType = String(data.studentType || '').toLowerCase();
+  var isMdPa = studentType === 'md' || studentType === 'pa';
+  var langs = Array.isArray(data.languages) ? data.languages.join(',').toLowerCase() : String(data.languages || '').toLowerCase();
+  var speaksMandarin = langs.indexOf('mandarin') !== -1;
+
+  for (var j = 0; j < shiftLines.length; j++) {
+    var line = shiftLines[j].trim();
+    if (!line) continue;
+    var dateMatch = line.match(/^([A-Za-z]+,\s+[A-Za-z]+\s+\d+)/);
+    var siteMatch = line.match(/—\s+(.+?)\s+\(/);
+    if (!dateMatch || !siteMatch) continue;
+
+    var key = dateMatch[1] + '|' + siteMatch[1];
+    var site = siteMatch[1];
+    var cap = SITE_CAPACITY[site] || { drivers: 3, nonDrivers: 3 };
+    var c = counts[key] || { drivers: 0, nonDrivers: 0, mdPaCount: 0, mandarinCount: 0 };
+
+    if (canDrive) {
+      if (c.drivers >= cap.drivers) {
+        return 'Driver spots are full for ' + line;
+      }
+    } else {
+      // Effective non-driver cap based on driver ratio (1 driver = 3 non-drivers)
+      var effectiveNonDriverCap = Math.min(cap.nonDrivers, c.drivers * 3);
+
+      // Reserve 1 spot for MD/PA at priority sites if none signed up yet
+      var userNonDriverCap = effectiveNonDriverCap;
+      if (!isMdPa && MD_PA_PRIORITY_SITES.indexOf(site) !== -1 && c.mdPaCount === 0) {
+        userNonDriverCap = Math.max(0, effectiveNonDriverCap - 1);
+      }
+
+      if (c.nonDrivers >= userNonDriverCap) {
+        // Mandarin override at Hope's Corner
+        if (speaksMandarin && site === MANDARIN_ONLY_SITE && c.mandarinCount === 0) {
+          // Allow — Mandarin speaker override
+        } else {
+          return 'Non-driver spots are full for ' + line;
+        }
+      }
+    }
+
+    // Update counts for subsequent shift checks in the same submission
+    if (canDrive) {
+      if (!counts[key]) counts[key] = { drivers: 0, nonDrivers: 0, mdPaCount: 0, mandarinCount: 0 };
+      counts[key].drivers++;
+    } else {
+      if (!counts[key]) counts[key] = { drivers: 0, nonDrivers: 0, mdPaCount: 0, mandarinCount: 0 };
+      counts[key].nonDrivers++;
+    }
+    if (isMdPa) { if (!counts[key]) counts[key] = { drivers: 0, nonDrivers: 0, mdPaCount: 0, mandarinCount: 0 }; counts[key].mdPaCount++; }
+    if (speaksMandarin) { if (!counts[key]) counts[key] = { drivers: 0, nonDrivers: 0, mdPaCount: 0, mandarinCount: 0 }; counts[key].mandarinCount++; }
+  }
+
+  return null; // all shifts valid
 }
 
 function createReminderTriggers() {
