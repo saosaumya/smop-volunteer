@@ -225,8 +225,8 @@ function doGet(e) {
           if (dateMatch && siteMatch) {
             var key = dateMatch[1] + '|' + siteMatch[1];
             if (!result[key]) result[key] = { drivers: 0, nonDrivers: 0, eventLead: '', driverList: [], nonDriverList: [], badgeHolders: [], clinicians: [], mandarinCount: 0, mdPaCount: 0 };
-            var person = { name: name, phone: String(phone) };
             var studentType = String(data[i][4] || '').toLowerCase();
+            var person = { name: name, phone: String(phone), studentType: studentType };
             if (studentType === 'md' || studentType === 'pa') {
               result[key].mdPaCount++;
             }

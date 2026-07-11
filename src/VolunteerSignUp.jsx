@@ -3,6 +3,8 @@ import { HiCheckCircle, HiExclamationCircle, HiInformationCircle } from 'react-i
 
 const SCRIPT_URL = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
 
+const STUDENT_TYPE_LABELS = { md: 'MD', pa: 'PA', undergrad: 'Undergrad', grad: 'Grad', other: 'Other' };
+
 const allShifts = [
   { date: 'Saturday, June 27', startDateTime: '2026-06-27T07:45:00', time: '7:45 – 10:45 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
   { date: 'Saturday, June 27', startDateTime: '2026-06-27T11:00:00', time: '11:00 am – 1:30 pm', site: 'Helping Hands at Sunnyvale Public Library', address: '665 W Olive Ave, Sunnyvale, CA 94086' },
@@ -468,7 +470,7 @@ export default function VolunteerSignUp() {
                                 <div>
                                   <span className="font-medium text-gray-600">Drivers:</span>{' '}
                                   {s.driverList.map((p, j) => (
-                                    <span key={j}>{p.name}{p.phone ? ` (${p.phone})` : ''}{j < s.driverList.length - 1 ? ', ' : ''}</span>
+                                    <span key={j}>{p.name}{p.studentType ? ` [${STUDENT_TYPE_LABELS[p.studentType] || p.studentType}]` : ''}{p.phone ? ` (${p.phone})` : ''}{j < s.driverList.length - 1 ? ', ' : ''}</span>
                                   ))}
                                 </div>
                               )}
@@ -476,7 +478,7 @@ export default function VolunteerSignUp() {
                                 <div>
                                   <span className="font-medium text-gray-600">Non-drivers:</span>{' '}
                                   {s.nonDriverList.map((p, j) => (
-                                    <span key={j}>{p.name}{p.phone ? ` (${p.phone})` : ''}{j < s.nonDriverList.length - 1 ? ', ' : ''}</span>
+                                    <span key={j}>{p.name}{p.studentType ? ` [${STUDENT_TYPE_LABELS[p.studentType] || p.studentType}]` : ''}{p.phone ? ` (${p.phone})` : ''}{j < s.nonDriverList.length - 1 ? ', ' : ''}</span>
                                   ))}
                                 </div>
                               )}
