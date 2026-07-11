@@ -463,6 +463,9 @@ export default function VolunteerSignUp() {
                             {userNonDriverCap < s.effectiveNonDriverCap && (
                               <span className="text-purple-600 font-semibold"> (1 spot reserved for MD/PA)</span>
                             )}
+                            {full && !form.canDrive && s.nonDrivers >= userNonDriverCap && s.drivers < s.capDrivers && (
+                              <span className="text-orange-600 font-semibold"> (non-driver spots full — driver spots still open)</span>
+                            )}
                           </div>
                           {(hasPeople || (s.clinicians && s.clinicians.length > 0)) && (
                             <div className="mt-1.5 text-xs text-gray-500 border-t border-gray-100 pt-1.5 space-y-0.5">
