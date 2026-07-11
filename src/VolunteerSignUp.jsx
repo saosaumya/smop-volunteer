@@ -510,6 +510,7 @@ export default function VolunteerSignUp() {
                     return (
                       <div key={i} className="bg-white rounded-lg border border-gray-100 p-3">
                         <div className="text-sm font-medium text-gray-800">{shift.date} — {shift.site}</div>
+                        <div className="text-xs text-gray-500">LKSC {shift.time} · {shift.address}</div>
                         <div className="flex flex-wrap gap-3 mt-1">
                           <span className={`text-xs ${s.drivers >= s.capDrivers ? 'text-orange-600' : 'text-gray-400'}`}>
                             Drivers: {s.drivers}/{s.capDrivers}
