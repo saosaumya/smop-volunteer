@@ -224,8 +224,12 @@ function doGet(e) {
           var siteMatch = line.match(/—\s+(.+?)\s+\(/);
           if (dateMatch && siteMatch) {
             var key = dateMatch[1] + '|' + siteMatch[1];
-            if (!result[key]) result[key] = { drivers: 0, nonDrivers: 0, eventLead: '', driverList: [], nonDriverList: [], badgeHolders: [], clinicians: [], mandarinCount: 0 };
+            if (!result[key]) result[key] = { drivers: 0, nonDrivers: 0, eventLead: '', driverList: [], nonDriverList: [], badgeHolders: [], clinicians: [], mandarinCount: 0, mdPaCount: 0 };
             var person = { name: name, phone: String(phone) };
+            var studentType = String(data[i][4] || '').toLowerCase();
+            if (studentType === 'md' || studentType === 'pa') {
+              result[key].mdPaCount++;
+            }
             if (languages.indexOf('mandarin') !== -1) {
               result[key].mandarinCount++;
             }

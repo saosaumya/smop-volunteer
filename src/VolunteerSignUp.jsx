@@ -154,11 +154,21 @@ export default function VolunteerSignUp() {
     return { ...data, capDrivers: cap.drivers, capNonDrivers: cap.nonDrivers, effectiveNonDriverCap };
   }
 
+  function getUserNonDriverCap(shift) {
+    const s = getShiftStatus(shift);
+    const isMdPa = form.studentType === 'md' || form.studentType === 'pa';
+    if (!isMdPa && MD_PA_PRIORITY_SITES.includes(shift.site) && !(s.mdPaCount > 0)) {
+      return Math.max(0, s.effectiveNonDriverCap - 1);
+    }
+    return s.effectiveNonDriverCap;
+  }
+
   function isShiftFull(shift) {
     const s = getShiftStatus(shift);
+    const cap = getUserNonDriverCap(shift);
     const normallyFull = form.canDrive
       ? s.drivers >= s.capDrivers
-      : s.nonDrivers >= s.effectiveNonDriverCap;
+      : s.nonDrivers >= cap;
     if (normallyFull && form.languages.includes('mandarin') && shift.site === MANDARIN_ONLY_SITE && !(s.mandarinCount > 0)) {
       return false;
     }
@@ -167,8 +177,9 @@ export default function VolunteerSignUp() {
 
   function getSlotForUser(shift) {
     const s = getShiftStatus(shift);
+    const cap = getUserNonDriverCap(shift);
     if (form.canDrive && s.drivers < s.capDrivers) return 'driver';
-    if (s.nonDrivers < s.effectiveNonDriverCap) return 'non-driver';
+    if (s.nonDrivers < cap) return 'non-driver';
     return null;
   }
 
@@ -431,10 +442,13 @@ export default function VolunteerSignUp() {
                             <span className={`text-xs ${s.drivers >= s.capDrivers ? 'text-orange-600' : 'text-gray-400'}`}>
                               Drivers: {s.drivers}/{s.capDrivers}
                             </span>
-                            <span className={`text-xs ${s.nonDrivers >= s.effectiveNonDriverCap ? 'text-orange-600' : 'text-gray-400'}`}>
+                            <span className={`text-xs ${s.nonDrivers >= getUserNonDriverCap(shift) ? 'text-orange-600' : 'text-gray-400'}`}>
                               Non-drivers: {s.nonDrivers}/{s.effectiveNonDriverCap}
                               {s.effectiveNonDriverCap < s.capNonDrivers && (
                                 <span className="text-red-500 font-semibold"> (need more drivers)</span>
+                              )}
+                              {getUserNonDriverCap(shift) < s.effectiveNonDriverCap && (
+                                <span className="text-purple-600 font-semibold"> (1 spot reserved for MD/PA)</span>
                               )}
                             </span>
                             {hasEventLead ? (
