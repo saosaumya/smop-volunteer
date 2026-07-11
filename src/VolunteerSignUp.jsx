@@ -150,14 +150,15 @@ export default function VolunteerSignUp() {
     const key = shiftKey(shift);
     const data = shiftData[key] || { drivers: 0, nonDrivers: 0, eventLead: '' };
     const cap = SITE_CAPACITY[shift.site] || { drivers: 3, nonDrivers: 3 };
-    return { ...data, capDrivers: cap.drivers, capNonDrivers: cap.nonDrivers };
+    const effectiveNonDriverCap = Math.min(cap.nonDrivers, data.drivers * 3);
+    return { ...data, capDrivers: cap.drivers, capNonDrivers: cap.nonDrivers, effectiveNonDriverCap };
   }
 
   function isShiftFull(shift) {
     const s = getShiftStatus(shift);
     const normallyFull = form.canDrive
-      ? s.drivers >= s.capDrivers && s.nonDrivers >= s.capNonDrivers
-      : s.nonDrivers >= s.capNonDrivers && s.drivers >= s.capDrivers;
+      ? s.drivers >= s.capDrivers
+      : s.nonDrivers >= s.effectiveNonDriverCap;
     if (normallyFull && form.languages.includes('mandarin') && shift.site === MANDARIN_ONLY_SITE && !(s.mandarinCount > 0)) {
       return false;
     }
@@ -167,8 +168,7 @@ export default function VolunteerSignUp() {
   function getSlotForUser(shift) {
     const s = getShiftStatus(shift);
     if (form.canDrive && s.drivers < s.capDrivers) return 'driver';
-    if (s.nonDrivers < s.capNonDrivers) return 'non-driver';
-    if (form.canDrive && s.drivers < s.capDrivers) return 'driver';
+    if (s.nonDrivers < s.effectiveNonDriverCap) return 'non-driver';
     return null;
   }
 
@@ -431,17 +431,22 @@ export default function VolunteerSignUp() {
                             <span className={`text-xs ${s.drivers >= s.capDrivers ? 'text-orange-600' : 'text-gray-400'}`}>
                               Drivers: {s.drivers}/{s.capDrivers}
                             </span>
-                            <span className={`text-xs ${s.nonDrivers >= s.capNonDrivers ? 'text-orange-600' : 'text-gray-400'}`}>
-                              Non-drivers: {s.nonDrivers}/{s.capNonDrivers}
+                            <span className={`text-xs ${s.nonDrivers >= s.effectiveNonDriverCap ? 'text-orange-600' : 'text-gray-400'}`}>
+                              Non-drivers: {s.nonDrivers}/{s.effectiveNonDriverCap}
+                              {s.effectiveNonDriverCap < s.capNonDrivers && (
+                                <span className="text-red-500 font-semibold"> (need more drivers)</span>
+                              )}
                             </span>
                             {hasEventLead ? (
                               <span className="text-xs text-green-700">{s.eventLead} is the event lead</span>
                             ) : (
                               <span className="text-xs text-gray-400">Event lead: open</span>
                             )}
-                            {s.badgeHolders && s.badgeHolders.length > 0 && (
+                            {s.badgeHolders && s.badgeHolders.length > 0 ? (
                               <span className="text-xs text-indigo-600">Badge: {s.badgeHolders.join(', ')}</span>
-                            )}
+                            ) : (s.drivers + s.nonDrivers) > 0 ? (
+                              <span className="text-xs font-bold text-red-600">⚠ NO BADGE ACCESS — must be resolved before event day</span>
+                            ) : null}
                           </div>
                           {(hasPeople || (s.clinicians && s.clinicians.length > 0)) && (
                             <div className="mt-1.5 text-xs text-gray-500 border-t border-gray-100 pt-1.5 space-y-0.5">
