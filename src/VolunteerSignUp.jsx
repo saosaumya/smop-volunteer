@@ -3,7 +3,7 @@ import { HiCheckCircle, HiExclamationCircle, HiInformationCircle } from 'react-i
 
 const SCRIPT_URL = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
 
-const STUDENT_TYPE_LABELS = { md: 'MD', pa: 'PA', undergrad: 'Undergrad', grad: 'Grad', other: 'Other' };
+const STUDENT_TYPE_LABELS = { md: 'MD Student', pa: 'PA Student', undergrad: 'Undergrad', grad: 'Grad Student', other: 'Other' };
 
 const allShifts = [
   { date: 'Saturday, June 27', startDateTime: '2026-06-27T07:45:00', time: '7:45 – 10:45 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
