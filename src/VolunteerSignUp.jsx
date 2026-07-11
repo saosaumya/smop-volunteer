@@ -97,6 +97,17 @@ function isShiftAllowed(shift, form) {
   return true;
 }
 
+function formatShiftDetails(shift) {
+  const parts = shift.time.split(/\s*[–\-]+\s*/);
+  let meetTime = (parts[0] || '').trim();
+  const returnTime = (parts[1] || '').trim();
+  if (!/am|pm/i.test(meetTime)) {
+    const suffix = returnTime.match(/(am|pm)/i);
+    if (suffix) meetTime += ' ' + suffix[1];
+  }
+  return `Meet at LKSC at ${meetTime}. Return to LKSC at ${returnTime}. We depart and return as a team to and from LKSC. The event is located at ${shift.address}.`;
+}
+
 export default function VolunteerSignUp() {
   const [form, setForm] = useState({
     name: '',
@@ -454,7 +465,7 @@ export default function VolunteerSignUp() {
                               <span className="ml-2 text-xs font-semibold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">Full</span>
                             )}
                           </div>
-                          <div className="text-xs text-gray-500">LKSC {shift.time} · {shift.address}</div>
+                          <div className="text-xs text-gray-500">{formatShiftDetails(shift)}</div>
                           <div className="text-xs text-gray-400 mt-1">
                             Spots: {filled}/{effectiveTotal} filled
                             {s.effectiveNonDriverCap < s.capNonDrivers && (
@@ -510,7 +521,7 @@ export default function VolunteerSignUp() {
                     return (
                       <div key={i} className="bg-white rounded-lg border border-gray-100 p-3">
                         <div className="text-sm font-medium text-gray-800">{shift.date} — {shift.site}</div>
-                        <div className="text-xs text-gray-500">LKSC {shift.time} · {shift.address}</div>
+                        <div className="text-xs text-gray-500">{formatShiftDetails(shift)}</div>
                         <div className="flex flex-wrap gap-3 mt-1">
                           <span className={`text-xs ${s.drivers >= s.capDrivers ? 'text-orange-600' : 'text-gray-400'}`}>
                             Drivers: {s.drivers}/{s.capDrivers}
@@ -623,7 +634,7 @@ export default function VolunteerSignUp() {
                       <div className="text-sm text-gray-700">
                         <span className="font-medium">{shift.date}</span> — {shift.site}
                       </div>
-                      <div className="text-xs text-gray-500">LKSC {shift.time} · {shift.address}</div>
+                      <div className="text-xs text-gray-500">{formatShiftDetails(shift)}</div>
                       <div className="flex flex-wrap gap-3 mt-1">
                         <span className="text-xs text-gray-400">Drivers: {s.drivers}/{(SITE_CAPACITY[shift.site] || {}).drivers || 3}</span>
                         <span className="text-xs text-gray-400">Non-drivers: {s.nonDrivers}/{(SITE_CAPACITY[shift.site] || {}).nonDrivers || 3}</span>
