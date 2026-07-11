@@ -424,20 +424,12 @@ export default function VolunteerSignUp() {
                   const s = getShiftStatus(shift);
                   const full = isShiftFull(shift);
                   const slot = getSlotForUser(shift);
-                  const hasEventLead = !!s.eventLead;
 
                   const hasPeople = (s.driverList && s.driverList.length > 0) || (s.nonDriverList && s.nonDriverList.length > 0);
 
-                  const isMdPa = form.studentType === 'md' || form.studentType === 'pa';
-                  const driverSlotsOpen = s.drivers < s.capDrivers;
-                  const mdPaReserved = !isMdPa && MD_PA_PRIORITY_SITES.includes(shift.site) && !(s.mdPaCount > 0);
-                  let fullLabel = 'Full';
-                  if (full) {
-                    const reasons = [];
-                    if (driverSlotsOpen) reasons.push('volunteers who can also drive');
-                    if (mdPaReserved) reasons.push('an MD/PA student');
-                    if (reasons.length > 0) fullLabel = 'Full except for ' + reasons.join(' or ');
-                  }
+                  const userNonDriverCap = getUserNonDriverCap(shift);
+                  const effectiveTotal = s.capDrivers + userNonDriverCap;
+                  const filled = s.drivers + s.nonDrivers;
 
                   return (
                     <div key={i} className={`rounded px-2 py-2 ${full && !form.shifts.includes(i) ? 'opacity-50' : 'hover:bg-gray-50'}`}>
@@ -455,16 +447,16 @@ export default function VolunteerSignUp() {
                               <span className={`ml-2 text-xs font-semibold px-2 py-0.5 rounded-full ${tag.color}`}>{tag.text}</span>
                             )}
                             {full && (
-                              <span className="ml-2 text-xs font-semibold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">{fullLabel}</span>
+                              <span className="ml-2 text-xs font-semibold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">Full</span>
                             )}
                           </div>
                           <div className="text-xs text-gray-500">LKSC {shift.time} · {shift.address}</div>
                           <div className="text-xs text-gray-400 mt-1">
-                            Spots: {s.drivers + s.nonDrivers}/{s.capDrivers + s.capNonDrivers} filled
+                            Spots: {filled}/{effectiveTotal} filled
                             {s.effectiveNonDriverCap < s.capNonDrivers && (
-                              <span className="text-red-500 font-semibold"> (need more drivers)</span>
+                              <span className="text-red-500 font-semibold"> ({s.capNonDrivers - s.effectiveNonDriverCap} spots blocked — need more drivers)</span>
                             )}
-                            {getUserNonDriverCap(shift) < s.effectiveNonDriverCap && (
+                            {userNonDriverCap < s.effectiveNonDriverCap && (
                               <span className="text-purple-600 font-semibold"> (1 spot reserved for MD/PA)</span>
                             )}
                           </div>
