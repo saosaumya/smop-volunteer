@@ -122,6 +122,8 @@ export default function VolunteerSignUp() {
 
   const now = Date.now();
   const futureShifts = allShifts.filter(s => new Date(s.startDateTime).getTime() > now);
+  const pastShifts = allShifts.filter(s => new Date(s.startDateTime).getTime() <= now);
+  const [showPast, setShowPast] = useState(false);
 
   const availableShifts = useMemo(() => {
     return futureShifts.filter(shift => isShiftAllowed(shift, form));
@@ -506,6 +508,74 @@ export default function VolunteerSignUp() {
               Stanford Medicine Outreach Program
             </p>
           </form>
+        )}
+
+        {pastShifts.length > 0 && (
+          <div className="mt-8">
+            <button
+              onClick={() => setShowPast(!showPast)}
+              className="text-sm text-gray-500 hover:text-gray-700 font-medium flex items-center gap-1"
+            >
+              <span className={`transition-transform ${showPast ? 'rotate-90' : ''}`}>▶</span>
+              Past Shifts ({pastShifts.length})
+            </button>
+            {showPast && (
+              <div className="mt-3 bg-white rounded-xl shadow-sm border border-gray-100 p-4 space-y-3">
+                {pastShifts.map((shift, i) => {
+                  const s = getShiftStatus(shift);
+                  const hasPeople = (s.driverList && s.driverList.length > 0) || (s.nonDriverList && s.nonDriverList.length > 0);
+                  return (
+                    <div key={i} className="rounded px-2 py-2 border-b border-gray-50 last:border-0">
+                      <div className="text-sm text-gray-700">
+                        <span className="font-medium">{shift.date}</span> — {shift.site}
+                      </div>
+                      <div className="text-xs text-gray-500">LKSC {shift.time} · {shift.address}</div>
+                      <div className="flex flex-wrap gap-3 mt-1">
+                        <span className="text-xs text-gray-400">Drivers: {s.drivers}/{(SITE_CAPACITY[shift.site] || {}).drivers || 3}</span>
+                        <span className="text-xs text-gray-400">Non-drivers: {s.nonDrivers}/{(SITE_CAPACITY[shift.site] || {}).nonDrivers || 3}</span>
+                        {s.eventLead ? (
+                          <span className="text-xs text-green-700">{s.eventLead} is the event lead</span>
+                        ) : (
+                          <span className="text-xs text-gray-400">Event lead: none</span>
+                        )}
+                        {s.badgeHolders && s.badgeHolders.length > 0 && (
+                          <span className="text-xs text-indigo-600">Badge: {s.badgeHolders.join(', ')}</span>
+                        )}
+                      </div>
+                      {(hasPeople || (s.clinicians && s.clinicians.length > 0)) && (
+                        <div className="mt-1.5 text-xs text-gray-500 border-t border-gray-100 pt-1.5 space-y-0.5">
+                          {s.driverList && s.driverList.length > 0 && (
+                            <div>
+                              <span className="font-medium text-gray-600">Drivers:</span>{' '}
+                              {s.driverList.map((p, j) => (
+                                <span key={j}>{p.name}{p.phone ? ` (${p.phone})` : ''}{j < s.driverList.length - 1 ? ', ' : ''}</span>
+                              ))}
+                            </div>
+                          )}
+                          {s.nonDriverList && s.nonDriverList.length > 0 && (
+                            <div>
+                              <span className="font-medium text-gray-600">Non-drivers:</span>{' '}
+                              {s.nonDriverList.map((p, j) => (
+                                <span key={j}>{p.name}{p.phone ? ` (${p.phone})` : ''}{j < s.nonDriverList.length - 1 ? ', ' : ''}</span>
+                              ))}
+                            </div>
+                          )}
+                          {s.clinicians && s.clinicians.length > 0 && (
+                            <div>
+                              <span className="font-medium text-green-700">Clinician:</span>{' '}
+                              {s.clinicians.map((c, j) => (
+                                <span key={j} className="text-green-700">{c.name}{c.role ? ` (${c.role})` : ''}{c.phone ? ` — ${c.phone}` : ''}{j < s.clinicians.length - 1 ? ', ' : ''}</span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         )}
       </div>
     </div>
