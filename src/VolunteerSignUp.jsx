@@ -447,12 +447,11 @@ export default function VolunteerSignUp() {
                   const filled = s.drivers + s.nonDrivers;
 
                   return (
-                    <div key={i} className={`rounded px-2 py-2 ${full && !form.shifts.includes(i) ? 'opacity-50' : 'hover:bg-gray-50'}`}>
-                      <label className={`flex items-start gap-2 text-sm text-gray-700 ${full && !form.shifts.includes(i) ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+                    <div key={i} className="rounded px-2 py-2 hover:bg-gray-50">
+                      <label className="flex items-start gap-2 text-sm text-gray-700 cursor-pointer">
                         <input
                           type="checkbox" checked={form.shifts.includes(i)}
                           onChange={() => handleShiftToggle(i)}
-                          disabled={full && !form.shifts.includes(i)}
                           className="accent-cardinal mt-0.5"
                         />
                         <div className="flex-1">
@@ -460,9 +459,6 @@ export default function VolunteerSignUp() {
                             <span className="font-medium">{shift.date}</span> — {shift.site}
                             {tag && (
                               <span className={`ml-2 text-xs font-semibold px-2 py-0.5 rounded-full ${tag.color}`}>{tag.text}</span>
-                            )}
-                            {full && (
-                              <span className="ml-2 text-xs font-semibold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">Full</span>
                             )}
                           </div>
                           <div className="text-xs text-gray-500">{formatShiftDetails(shift)}</div>
