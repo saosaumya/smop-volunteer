@@ -649,7 +649,7 @@ export default function VolunteerSignUp() {
                             <div>
                               <span className="font-medium text-gray-600">Drivers:</span>{' '}
                               {s.driverList.map((p, j) => (
-                                <span key={j}>{p.name}{p.phone ? ` (${p.phone})` : ''}{j < s.driverList.length - 1 ? ', ' : ''}</span>
+                                <span key={j}>{p.name}{p.studentType ? ` [${STUDENT_TYPE_LABELS[p.studentType] || p.studentType}]` : ''}{p.phone ? ` (${p.phone})` : ''}{j < s.driverList.length - 1 ? ', ' : ''}</span>
                               ))}
                             </div>
                           )}
@@ -657,7 +657,7 @@ export default function VolunteerSignUp() {
                             <div>
                               <span className="font-medium text-gray-600">Non-drivers:</span>{' '}
                               {s.nonDriverList.map((p, j) => (
-                                <span key={j}>{p.name}{p.phone ? ` (${p.phone})` : ''}{j < s.nonDriverList.length - 1 ? ', ' : ''}</span>
+                                <span key={j}>{p.name}{p.studentType ? ` [${STUDENT_TYPE_LABELS[p.studentType] || p.studentType}]` : ''}{p.phone ? ` (${p.phone})` : ''}{j < s.nonDriverList.length - 1 ? ', ' : ''}</span>
                               ))}
                             </div>
                           )}
