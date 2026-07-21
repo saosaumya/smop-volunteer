@@ -141,6 +141,31 @@ export default function VolunteerSignUp() {
   const pastShifts = allShifts.filter(s => new Date(s.startDateTime).getTime() <= now);
   const [showPast, setShowPast] = useState(false);
   const [showCoordinator, setShowCoordinator] = useState(false);
+  const [removing, setRemoving] = useState(null);
+
+  const handleRemoveVolunteer = async (name, shiftDate, shiftSite) => {
+    if (!confirm(`Remove ${name} from ${shiftDate} — ${shiftSite}?`)) return;
+    const key = `${name}|${shiftDate}|${shiftSite}`;
+    setRemoving(key);
+    try {
+      const res = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ type: 'remove-volunteer', name, shiftDate, shiftSite }),
+      });
+      const result = await res.json();
+      if (result.status === 'ok') {
+        const refreshRes = await fetch(`${SCRIPT_URL}?type=volunteer-counts`);
+        const refreshData = await refreshRes.json();
+        setShiftData(refreshData.shifts || {});
+      } else {
+        alert(result.message || 'Failed to remove volunteer');
+      }
+    } catch {
+      alert('Failed to remove volunteer. Please try again.');
+    }
+    setRemoving(null);
+  };
 
   const availableShifts = useMemo(() => {
     return futureShifts
@@ -540,17 +565,31 @@ export default function VolunteerSignUp() {
                           {s.driverList && s.driverList.length > 0 && (
                             <div>
                               <span className="font-medium text-gray-600">Drivers:</span>{' '}
-                              {s.driverList.map((p, j) => (
-                                <span key={j}>{p.name}{p.studentType ? ` [${STUDENT_TYPE_LABELS[p.studentType] || p.studentType}]` : ''}{p.languages ? ` {${p.languages}}` : ''}{p.email ? ` ${p.email}` : ''}{p.phone ? ` (${p.phone})` : ''}{j < s.driverList.length - 1 ? ', ' : ''}</span>
-                              ))}
+                              {s.driverList.map((p, j) => {
+                                const rmKey = `${p.name}|${shift.date}|${shift.site}`;
+                                return (
+                                  <span key={j}>
+                                    {p.name}{p.studentType ? ` [${STUDENT_TYPE_LABELS[p.studentType] || p.studentType}]` : ''}{p.languages ? ` {${p.languages}}` : ''}{p.email ? ` ${p.email}` : ''}{p.phone ? ` (${p.phone})` : ''}
+                                    <button type="button" onClick={() => handleRemoveVolunteer(p.name, shift.date, shift.site)} disabled={removing === rmKey} className="ml-1 text-red-400 hover:text-red-600 font-bold" title={`Remove ${p.name}`}>{removing === rmKey ? '...' : '✕'}</button>
+                                    {j < s.driverList.length - 1 ? ', ' : ''}
+                                  </span>
+                                );
+                              })}
                             </div>
                           )}
                           {s.nonDriverList && s.nonDriverList.length > 0 && (
                             <div>
                               <span className="font-medium text-gray-600">Non-drivers:</span>{' '}
-                              {s.nonDriverList.map((p, j) => (
-                                <span key={j}>{p.name}{p.studentType ? ` [${STUDENT_TYPE_LABELS[p.studentType] || p.studentType}]` : ''}{p.languages ? ` {${p.languages}}` : ''}{p.email ? ` ${p.email}` : ''}{p.phone ? ` (${p.phone})` : ''}{j < s.nonDriverList.length - 1 ? ', ' : ''}</span>
-                              ))}
+                              {s.nonDriverList.map((p, j) => {
+                                const rmKey = `${p.name}|${shift.date}|${shift.site}`;
+                                return (
+                                  <span key={j}>
+                                    {p.name}{p.studentType ? ` [${STUDENT_TYPE_LABELS[p.studentType] || p.studentType}]` : ''}{p.languages ? ` {${p.languages}}` : ''}{p.email ? ` ${p.email}` : ''}{p.phone ? ` (${p.phone})` : ''}
+                                    <button type="button" onClick={() => handleRemoveVolunteer(p.name, shift.date, shift.site)} disabled={removing === rmKey} className="ml-1 text-red-400 hover:text-red-600 font-bold" title={`Remove ${p.name}`}>{removing === rmKey ? '...' : '✕'}</button>
+                                    {j < s.nonDriverList.length - 1 ? ', ' : ''}
+                                  </span>
+                                );
+                              })}
                             </div>
                           )}
                           {s.clinicians && s.clinicians.length > 0 && (
@@ -562,6 +601,36 @@ export default function VolunteerSignUp() {
                             </div>
                           )}
                         </div>
+                        {(s.driverList?.length > 0 || s.nonDriverList?.length > 0) && (() => {
+                          const eventLeadName = s.eventLead || '[EVENT LEAD NAME]';
+                          const allPeople = [...(s.driverList || []), ...(s.nonDriverList || [])];
+                          const eventLeadPerson = allPeople.find(p => p.name === s.eventLead);
+                          const eventLeadPhone = eventLeadPerson?.phone || '[PHONE]';
+                          const driverNames = (s.driverList || []).map(p => p.name).join(', ') || '[NO DRIVERS]';
+                          const badgeNames = (s.badgeHolders || []).join(', ') || '[NO BADGE HOLDERS]';
+                          const meetMatch = shift.time.split(/\s*[–\-]+\s*/);
+                          let meetTime = (meetMatch[0] || '').trim();
+                          if (!/am|pm/i.test(meetTime)) {
+                            const suffix = (meetMatch[1] || '').match(/(am|pm)/i);
+                            if (suffix) meetTime += ' ' + suffix[1];
+                          }
+                          const script = `Hey everyone! I'm Johnathan, volunteer coordinator of SMOP. I won't be at the volunteer outreach event this Saturday, but the event lead is ${eventLeadName} (${eventLeadPhone}) in this group chat. Thanks so much for volunteering with us!\n\n${driverNames} please park in the handicap spots closest to LK so we can load the cars with supplies - put your hazards on to prevent getting a ticket. Once we load up the cars and volunteers, the location to drive to is ${shift.address}.\n\n${badgeNames} - you have signed up for badge access to LKSC. Please make sure you bring your badge so that we have access to our supplies. If you cancel your shift, please make sure the volunteer coordinator is aware because we cannot access supplies without a badge.\n\nAll, please arrive at LK by ${meetTime}. We will load up cars from LK.\n\nDress code: Stanford Med or Stanford shirt (SMOP Shirt if you have one); casual but appropriate pants; closed-toed shoes.\n\nTo do on the car-ride there:\n\n1. Please review this Google Form that must be filled out for EVERY client we serve– this information must be reported to the Santa Clara Health Department and other funders to continue receiving donations. Not filling out this form for all clients really hurts our program.\nhttps://docs.google.com/forms/d/e/1FAIpQLSdYhnQ-mjQflrueQGOLF82aiJUQ6H8Gz3Mxuv0zZD4c-dI71w/viewform?usp=dialog\n\n2. Watch the below trainings (on x2 speed)\nhttps://drive.google.com/file/d/1bUnQ-kZso7s_hqsehG9G7k5m5pWyiLaX/view?usp=sharing\nhttps://drive.google.com/file/d/1Dfl8FcfNY7rQzZLzLYvsiEBHvlaJx_Gg/view?usp=sharing\n\nWhen you arrive: Text when you arrive! If you have badge access, head up to 4th floor and retrieve supplies for respective location. If you don't, go to LK outside stairs until someone lets you in.\n\nFailure to alert us of cancellations by the end of today will result in being unable to volunteer for the remainder of the quarter.`;
+                          return (
+                            <div className="mt-2 border-t border-gray-100 pt-2">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="text-xs font-medium text-gray-600">Volunteer Coordinator Script</span>
+                                <button
+                                  type="button"
+                                  onClick={() => { navigator.clipboard.writeText(script); }}
+                                  className="text-xs text-cardinal hover:text-cardinal-dark font-medium px-2 py-0.5 rounded border border-cardinal/30 hover:bg-cardinal/5"
+                                >
+                                  Copy Script
+                                </button>
+                              </div>
+                              <pre className="text-xs text-gray-500 whitespace-pre-wrap bg-gray-50 rounded p-2 max-h-40 overflow-y-auto">{script}</pre>
+                            </div>
+                          );
+                        })()}
                       </div>
                     );
                   })}

@@ -78,6 +78,52 @@ function doPost(e) {
       .setMimeType(ContentService.MimeType.JSON);
   }
 
+  if (data.type === 'remove-volunteer') {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Student Volunteers');
+    if (!sheet) {
+      return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Sheet not found' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    var rows = sheet.getDataRange().getValues();
+    var targetName = String(data.name || '').trim();
+    var targetDate = String(data.shiftDate || '').trim();
+    var targetSite = String(data.shiftSite || '').trim();
+    var removedCount = 0;
+
+    for (var i = rows.length - 1; i >= 1; i--) {
+      var rowName = String(rows[i][1] || '').trim();
+      var shiftsCell = String(rows[i][7] || '');
+      if (rowName !== targetName) continue;
+
+      var shiftLines = shiftsCell.split('\n');
+      var remaining = [];
+      var found = false;
+      for (var k = 0; k < shiftLines.length; k++) {
+        var line = shiftLines[k].trim();
+        if (!found && line.indexOf(targetDate) !== -1 && line.indexOf(targetSite) !== -1) {
+          found = true;
+        } else {
+          remaining.push(shiftLines[k]);
+        }
+      }
+      if (found) {
+        if (remaining.length === 0 || (remaining.length === 1 && remaining[0].trim() === '')) {
+          sheet.deleteRow(i + 1);
+        } else {
+          sheet.getRange(i + 1, 8).setValue(remaining.join('\n'));
+        }
+        removedCount++;
+      }
+    }
+
+    if (removedCount > 0) {
+      return ContentService.createTextOutput(JSON.stringify({ status: 'ok', removed: removedCount }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Volunteer not found for that shift' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
   if (data.type === 'student-volunteer') {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Student Volunteers');
     if (!sheet) {
