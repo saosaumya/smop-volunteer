@@ -615,11 +615,19 @@ function sendReminders_(sheetName, type) {
       colToMark = 6;
     } else if (daysUntil <= 1 && daysUntil >= 0 && !sent1) {
       reminderSubject = 'SMOP Shift Reminder — TOMORROW';
-      reminderBody = 'Hi ' + name + ',\n\n'
-        + 'Your SMOP volunteer shift is TOMORROW!\n\n'
-        + shiftText + '\n\n'
-        + 'We look forward to seeing you. If you have any last-minute questions, reply here or text Saumya at 407-590-7065.\n\n'
-        + 'Thank you!\nSMOP Team';
+      if (isClinician) {
+        reminderBody = 'Hi ' + name + ',\n\n'
+          + 'Your SMOP volunteer shift is TOMORROW!\n\n'
+          + shiftText + '\n\n'
+          + 'We look forward to seeing you. If you have any last-minute questions, reply here or text Saumya at 407-590-7065.\n\n'
+          + 'Thank you!\nSMOP Team';
+      } else {
+        reminderBody = 'Hi ' + name + ',\n\n'
+          + 'Your SMOP volunteer shift is TOMORROW!\n\n'
+          + shiftText + '\n\n'
+          + 'We look forward to seeing you. If you have any last-minute questions, reply here or text Johnathan at (909) 810-9164 or Laura at (346) 242-4484.\n\n'
+          + 'Thank you!\nSMOP Team';
+      }
       colToMark = 7;
     }
 
@@ -631,8 +639,10 @@ function sendReminders_(sheetName, type) {
           body: reminderBody,
           name: 'SMOP Volunteer Coordination'
         };
-        if (ccRecipients) {
+        if (isClinician) {
           emailOptions.cc = ccRecipients;
+        } else {
+          emailOptions.replyTo = 'jghazal@stanford.edu';
         }
         MailApp.sendEmail(emailOptions);
         sheet.getRange(i + 1, colToMark).setValue(true);
