@@ -190,12 +190,28 @@ export default function VolunteerSignUp() {
     }));
   };
 
+  const MANUAL_ADDITIONS = [
+    { date: 'Saturday, August 22', site: 'Neighborhood Hands', person: { name: 'Tony Menacho', email: '', phone: '(909) 730-5241', studentType: '', languages: '' }, isDriver: false },
+  ];
+
   function getShiftStatus(shift) {
     const key = shiftKey(shift);
     const data = shiftData[key] || { drivers: 0, nonDrivers: 0, eventLead: '' };
+    const merged = { ...data, driverList: [...(data.driverList || [])], nonDriverList: [...(data.nonDriverList || [])], badgeHolders: [...(data.badgeHolders || [])] };
+    MANUAL_ADDITIONS.forEach(ma => {
+      if (ma.date === shift.date && ma.site === shift.site) {
+        if (ma.isDriver) {
+          merged.drivers++;
+          merged.driverList.push(ma.person);
+        } else {
+          merged.nonDrivers++;
+          merged.nonDriverList.push(ma.person);
+        }
+      }
+    });
     const cap = SITE_CAPACITY[shift.site] || { drivers: 3, nonDrivers: 3 };
-    const effectiveNonDriverCap = Math.min(cap.nonDrivers, data.drivers * 3);
-    return { ...data, capDrivers: cap.drivers, capNonDrivers: cap.nonDrivers, effectiveNonDriverCap };
+    const effectiveNonDriverCap = Math.min(cap.nonDrivers, merged.drivers * 3);
+    return { ...merged, capDrivers: cap.drivers, capNonDrivers: cap.nonDrivers, effectiveNonDriverCap };
   }
 
   function getUserNonDriverCap(shift) {
