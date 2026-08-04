@@ -210,7 +210,10 @@ export default function VolunteerSignUp() {
       }
     });
     const cap = SITE_CAPACITY[shift.site] || { drivers: 3, nonDrivers: 3 };
-    const effectiveNonDriverCap = Math.min(cap.nonDrivers, merged.drivers * 3);
+    const UNBLOCK_DATES = ['Saturday, August 8'];
+    const effectiveNonDriverCap = UNBLOCK_DATES.includes(shift.date)
+      ? cap.nonDrivers
+      : Math.min(cap.nonDrivers, merged.drivers * 3);
     return { ...merged, capDrivers: cap.drivers, capNonDrivers: cap.nonDrivers, effectiveNonDriverCap };
   }
 
