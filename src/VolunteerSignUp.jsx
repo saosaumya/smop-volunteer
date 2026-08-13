@@ -115,6 +115,7 @@ export default function VolunteerSignUp() {
     phone: '',
     studentType: '',
     smopFellow: false,
+    inde232: false,
     languages: [],
     canDrive: false,
     hasBadgeAccess: false,
@@ -136,6 +137,8 @@ export default function VolunteerSignUp() {
 
   const now = Date.now();
   const SIGNUPS_HIDDEN_BEFORE = new Date('2026-07-27T00:00:00').getTime();
+  const INDE232_START = new Date('2026-09-22T00:00:00').getTime();
+  const INDE232_END = new Date('2026-12-12T23:59:59').getTime();
   const futureShifts = allShifts.filter(s => new Date(s.startDateTime).getTime() > now);
   const hiddenShifts = futureShifts.filter(s => new Date(s.startDateTime).getTime() < SIGNUPS_HIDDEN_BEFORE);
   const pastShifts = allShifts.filter(s => new Date(s.startDateTime).getTime() <= now);
@@ -170,8 +173,13 @@ export default function VolunteerSignUp() {
   const availableShifts = useMemo(() => {
     return futureShifts
       .filter(s => new Date(s.startDateTime).getTime() >= SIGNUPS_HIDDEN_BEFORE)
-      .filter(shift => isShiftAllowed(shift, form));
-  }, [futureShifts, form.languages, form.smopFellow]);
+      .filter(shift => isShiftAllowed(shift, form))
+      .filter(shift => {
+        const t = new Date(shift.startDateTime).getTime();
+        if (t >= INDE232_START && t <= INDE232_END) return form.inde232;
+        return true;
+      });
+  }, [futureShifts, form.languages, form.smopFellow, form.inde232]);
 
   const handleLanguageToggle = (lang) => {
     setForm(prev => ({
@@ -323,7 +331,7 @@ export default function VolunteerSignUp() {
               Questions? Email <a href="mailto:stanford.h.outreach@gmail.com" className="text-cardinal hover:underline">stanford.h.outreach@gmail.com</a>
             </p>
             <button
-              onClick={() => { setStatus('idle'); setForm({ name: '', email: '', phone: '', studentType: '', smopFellow: false, languages: [], canDrive: false, hasBadgeAccess: false, isEventLead: false, shifts: [], notes: '' }); }}
+              onClick={() => { setStatus('idle'); setForm({ name: '', email: '', phone: '', studentType: '', smopFellow: false, inde232: false, languages: [], canDrive: false, hasBadgeAccess: false, isEventLead: false, shifts: [], notes: '' }); }}
               className="mt-6 text-sm text-cardinal font-semibold hover:underline"
             >
               Sign up for more shifts
@@ -383,6 +391,17 @@ export default function VolunteerSignUp() {
                     className="accent-cardinal"
                   />
                   I am a SMOP Fellow
+                </label>
+              </div>
+
+              <div>
+                <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                  <input
+                    type="checkbox" checked={form.inde232}
+                    onChange={e => setForm(f => ({ ...f, inde232: e.target.checked, shifts: [] }))}
+                    className="accent-cardinal"
+                  />
+                  I am enrolled in INDE 232 (Health Equity Education lunch seminar)
                 </label>
               </div>
 
