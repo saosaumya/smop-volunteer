@@ -218,11 +218,7 @@ export default function VolunteerSignUp() {
       }
     });
     const cap = SITE_CAPACITY[shift.site] || { drivers: 3, nonDrivers: 3 };
-    const UNBLOCK_DATES = ['Saturday, August 8'];
-    const effectiveNonDriverCap = UNBLOCK_DATES.includes(shift.date)
-      ? cap.nonDrivers
-      : Math.min(cap.nonDrivers, merged.drivers * 3);
-    return { ...merged, capDrivers: cap.drivers, capNonDrivers: cap.nonDrivers, effectiveNonDriverCap };
+    return { ...merged, capDrivers: cap.drivers, capNonDrivers: cap.nonDrivers, effectiveNonDriverCap: cap.nonDrivers };
   }
 
   function getUserNonDriverCap(shift) {
@@ -488,6 +484,15 @@ export default function VolunteerSignUp() {
               </div>
             )}
 
+            {form.studentType && form.studentType !== 'md' && form.studentType !== 'pa' && (
+              <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
+                <HiInformationCircle className="text-blue-600 shrink-0 mt-0.5" size={18} />
+                <p className="text-sm text-blue-800">
+                  Non-MD/PA students are limited to 8 shifts per quarter to ensure fair access for all volunteers.
+                </p>
+              </div>
+            )}
+
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <h2 className="text-lg font-semibold text-gray-800 mb-1">Select Shifts</h2>
               <p className="text-xs text-gray-500 mb-3">
@@ -527,14 +532,8 @@ export default function VolunteerSignUp() {
                           <div className="text-xs text-gray-500">{formatShiftDetails(shift)}</div>
                           <div className="text-xs text-gray-400 mt-1">
                             Spots: {filled}/{effectiveTotal} filled
-                            {s.effectiveNonDriverCap < s.capNonDrivers && (
-                              <span className="text-red-500 font-semibold"> ({s.capNonDrivers - s.effectiveNonDriverCap} spots blocked — need more drivers)</span>
-                            )}
                             {userNonDriverCap < s.effectiveNonDriverCap && (
                               <span className="text-purple-600 font-semibold"> (1 spot reserved for MD/PA)</span>
-                            )}
-                            {full && !form.canDrive && s.nonDrivers >= userNonDriverCap && s.drivers < s.capDrivers && (
-                              <span className="text-orange-600 font-semibold"> (non-driver spots full — driver spots still open)</span>
                             )}
                           </div>
                           {(hasPeople || (s.clinicians && s.clinicians.length > 0)) && (

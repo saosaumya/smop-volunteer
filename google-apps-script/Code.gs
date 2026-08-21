@@ -698,6 +698,27 @@ function validateVolunteerCapacity_(sheet, data) {
   var canDrive = data.canDrive === true || data.canDrive === 'true';
   var studentType = String(data.studentType || '').toLowerCase();
   var isMdPa = studentType === 'md' || studentType === 'pa';
+
+  // Per-student shift limit: 8 shifts for non-MD/PA students
+  var MAX_SHIFTS_NON_MDPA = 8;
+  if (!isMdPa) {
+    var volunteerEmail = String(data.email || '').toLowerCase().trim();
+    var existingShiftCount = 0;
+    for (var r = 1; r < rows.length; r++) {
+      var rowEmail = String(rows[r][2] || '').toLowerCase().trim();
+      if (rowEmail !== volunteerEmail) continue;
+      var rowShifts = String(rows[r][7] || '');
+      var rowLines = rowShifts.split('\n');
+      for (var rl = 0; rl < rowLines.length; rl++) {
+        if (rowLines[rl].trim()) existingShiftCount++;
+      }
+    }
+    var newShiftCount = shiftLines.filter(function(l) { return l.trim(); }).length;
+    if (existingShiftCount + newShiftCount > MAX_SHIFTS_NON_MDPA) {
+      return 'You have already signed up for ' + existingShiftCount + ' shift(s). Non-MD/PA students are limited to ' + MAX_SHIFTS_NON_MDPA + ' shifts per quarter. You can sign up for ' + Math.max(0, MAX_SHIFTS_NON_MDPA - existingShiftCount) + ' more.';
+    }
+  }
+
   var langs = Array.isArray(data.languages) ? data.languages.join(',').toLowerCase() : String(data.languages || '').toLowerCase();
   var speaksMandarin = langs.indexOf('mandarin') !== -1;
 
@@ -718,8 +739,7 @@ function validateVolunteerCapacity_(sheet, data) {
         return 'Driver spots are full for ' + line;
       }
     } else {
-      // Effective non-driver cap based on driver ratio (1 driver = 3 non-drivers)
-      var effectiveNonDriverCap = Math.min(cap.nonDrivers, c.drivers * 3);
+      var effectiveNonDriverCap = cap.nonDrivers;
 
       // Reserve 1 spot for MD/PA at priority sites if none signed up yet
       var userNonDriverCap = effectiveNonDriverCap;
