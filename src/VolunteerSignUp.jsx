@@ -108,20 +108,41 @@ function formatShiftDetails(shift) {
   return `Meet at LKSC at ${meetTime}. Return to LKSC at ${returnTime}. We depart and return as a team to and from LKSC. The event is located at ${shift.address}.`;
 }
 
+const SAVED_FIELDS = ['name', 'email', 'phone', 'studentType', 'smopFellow', 'inde232', 'languages', 'canDrive', 'hasBadgeAccess', 'isEventLead'];
+const STORAGE_KEY = 'smop-volunteer-info';
+
+function loadSavedInfo() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (saved) return saved;
+  } catch {}
+  return null;
+}
+
+function saveInfo(form) {
+  const toSave = {};
+  SAVED_FIELDS.forEach(k => { toSave[k] = form[k]; });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+}
+
 export default function VolunteerSignUp() {
-  const [form, setForm] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    studentType: '',
-    smopFellow: false,
-    inde232: false,
-    languages: [],
-    canDrive: false,
-    hasBadgeAccess: false,
-    isEventLead: false,
-    shifts: [],
-    notes: '',
+  const [form, setForm] = useState(() => {
+    const defaults = {
+      name: '',
+      email: '',
+      phone: '',
+      studentType: '',
+      smopFellow: false,
+      inde232: false,
+      languages: [],
+      canDrive: false,
+      hasBadgeAccess: false,
+      isEventLead: false,
+      shifts: [],
+      notes: '',
+    };
+    const saved = loadSavedInfo();
+    return saved ? { ...defaults, ...saved, shifts: [], notes: '' } : defaults;
   });
   const [status, setStatus] = useState('idle');
   const [capacityError, setCapacityError] = useState('');
@@ -176,7 +197,10 @@ export default function VolunteerSignUp() {
       .filter(shift => isShiftAllowed(shift, form))
       .filter(shift => {
         const t = new Date(shift.startDateTime).getTime();
-        if (t >= INDE232_START && t <= INDE232_END) return form.inde232;
+        if (t >= INDE232_START && t <= INDE232_END) {
+          const isMdPa = form.studentType === 'md' || form.studentType === 'pa';
+          return form.inde232 || isMdPa;
+        }
         return true;
       });
   }, [futureShifts, form.languages, form.smopFellow, form.inde232]);
@@ -274,6 +298,7 @@ export default function VolunteerSignUp() {
           phone: form.phone,
           studentType: form.studentType,
           smopFellow: form.smopFellow,
+          inde232: form.inde232,
           languages: form.languages,
           canDrive: form.canDrive,
           hasBadgeAccess: form.hasBadgeAccess,
@@ -288,6 +313,7 @@ export default function VolunteerSignUp() {
         setCapacityError(result.message);
         setStatus('idle');
       } else {
+        saveInfo(form);
         setStatus('success');
       }
     } catch {
@@ -510,9 +536,14 @@ export default function VolunteerSignUp() {
 
                   const hasPeople = (s.driverList && s.driverList.length > 0) || (s.nonDriverList && s.nonDriverList.length > 0);
 
+                  const shiftTime = new Date(shift.startDateTime).getTime();
+                  const isInde232Shift = shiftTime >= INDE232_START && shiftTime <= INDE232_END;
+                  const isMdPaUser = form.studentType === 'md' || form.studentType === 'pa';
+                  const isMdPaOnly = isInde232Shift && isMdPaUser && !form.inde232;
+
                   const userNonDriverCap = getUserNonDriverCap(shift);
-                  const effectiveTotal = s.capDrivers + userNonDriverCap;
-                  const filled = s.drivers + s.nonDrivers;
+                  const effectiveTotal = isMdPaOnly ? 2 : s.capDrivers + userNonDriverCap;
+                  const filled = isMdPaOnly ? Math.min(s.drivers + s.nonDrivers, 2) : s.drivers + s.nonDrivers;
 
                   return (
                     <div key={i} className="rounded px-2 py-2 hover:bg-gray-50">
@@ -532,7 +563,10 @@ export default function VolunteerSignUp() {
                           <div className="text-xs text-gray-500">{formatShiftDetails(shift)}</div>
                           <div className="text-xs text-gray-400 mt-1">
                             Spots: {filled}/{effectiveTotal} filled
-                            {userNonDriverCap < s.effectiveNonDriverCap && (
+                            {isMdPaOnly && (
+                              <span className="text-purple-600 font-semibold"> (2 MD/PA spots released — INDE 232 priority)</span>
+                            )}
+                            {!isMdPaOnly && userNonDriverCap < s.effectiveNonDriverCap && (
                               <span className="text-purple-600 font-semibold"> (1 spot reserved for MD/PA)</span>
                             )}
                           </div>

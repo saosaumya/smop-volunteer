@@ -5,7 +5,7 @@ function doPost(e) {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Clinician Signups');
     if (!sheet) {
       sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet('Clinician Signups');
-      sheet.appendRow(['Timestamp', 'Name', 'Email', 'Phone', 'Role', 'Preference', 'Shifts', 'Notes']);
+      sheet.appendRow(['Timestamp', 'Name', 'Email', 'Phone', 'Role', 'Preference', 'Shifts', 'Notes', 'IsRetired']);
     }
 
     var shifts = Array.isArray(data.shifts) ? data.shifts.join('\n') : String(data.shifts);
@@ -18,7 +18,8 @@ function doPost(e) {
       data.role || '',
       data.preference || '',
       shifts,
-      data.notes || ''
+      data.notes || '',
+      data.isRetired || false
     ]);
 
     var icsShifts = shifts;
@@ -233,10 +234,12 @@ function doGet(e) {
   if (params.type === 'clinician-counts') {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Clinician Signups');
     var counts = {};
+    var retiredCounts = {};
     if (sheet) {
       var data = sheet.getDataRange().getValues();
       for (var i = 1; i < data.length; i++) {
         var shiftsCell = data[i][6];
+        var isRetired = data[i][8] === true || data[i][8] === 'true' || data[i][8] === 'TRUE';
         if (!shiftsCell) continue;
         var shiftLines = String(shiftsCell).split('\n');
         shiftLines.forEach(function(line) {
@@ -247,11 +250,14 @@ function doGet(e) {
           if (dateMatch && siteMatch) {
             var key = dateMatch[1] + '|' + siteMatch[1];
             counts[key] = (counts[key] || 0) + 1;
+            if (isRetired) {
+              retiredCounts[key] = (retiredCounts[key] || 0) + 1;
+            }
           }
         });
       }
     }
-    return ContentService.createTextOutput(JSON.stringify({ counts: counts }))
+    return ContentService.createTextOutput(JSON.stringify({ counts: counts, retiredCounts: retiredCounts }))
       .setMimeType(ContentService.MimeType.JSON);
   }
 
@@ -619,6 +625,15 @@ function sendReminders_(sheetName, type) {
         reminderBody = 'Hi ' + name + ',\n\n'
           + 'Your SMOP volunteer shift is TOMORROW!\n\n'
           + shiftText + '\n\n'
+          + 'We have a "Clinician\'s kit" packed in our supplies bin. The "Clinician\'s kit" is a little clear plastic box that has a stethoscope, reflex hammer, pen light, medical tape, extra batteries (for the blood pressure and blood sugar machines), and notebook and pens to write down peoples\' blood pressure or blood sugar readings if they want to take their readings home with them. Additional supplies in our supplies bin:\n\n'
+          + '- 2 automatic blood pressure machines\n'
+          + '- 1 XL blood pressure cuff attachment\n'
+          + '- 1 manual blood pressure cuff if needed\n'
+          + '- Blood sugar toolbox (contains gauze, blood sugar machine, lancets, etc.)\n'
+          + '- Biohazard bags\n'
+          + '- Sharps disposal box\n'
+          + '- Gloves\n\n'
+          + 'If you find yourself in need of anything else, just send me an email ssao@stanford.edu and I\'m happy to order it to keep in our supplies for next time.\n\n'
           + 'We look forward to seeing you. If you have any last-minute questions, reply here or text Saumya at 407-590-7065.\n\n'
           + 'Thank you!\nSMOP Team';
       } else {
@@ -733,6 +748,23 @@ function validateVolunteerCapacity_(sheet, data) {
     var site = siteMatch[1];
     var cap = SITE_CAPACITY[site] || { drivers: 3, nonDrivers: 3 };
     var c = counts[key] || { drivers: 0, nonDrivers: 0, mdPaCount: 0, mandarinCount: 0 };
+
+    // INDE 232 date range: Sep 22 – Dec 12, only INDE 232 or MD/PA (2 spots) allowed
+    var INDE232_START = new Date('2026-09-22').getTime();
+    var INDE232_END = new Date('2026-12-12T23:59:59').getTime();
+    var shiftDateParsed = new Date(dateMatch[1] + ', 2026').getTime();
+    var isInde232 = data.inde232 === true || data.inde232 === 'true';
+    if (shiftDateParsed >= INDE232_START && shiftDateParsed <= INDE232_END) {
+      if (!isInde232 && !isMdPa) {
+        return 'This shift is reserved for INDE 232 students and MD/PA students.';
+      }
+      if (isMdPa && !isInde232) {
+        var totalSignups = c.drivers + c.nonDrivers;
+        if (totalSignups >= 2) {
+          return 'MD/PA spots are full for this INDE 232 shift: ' + line;
+        }
+      }
+    }
 
     if (canDrive) {
       if (c.drivers >= cap.drivers) {
