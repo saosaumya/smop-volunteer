@@ -754,8 +754,9 @@ function validateVolunteerCapacity_(sheet, data) {
     var INDE232_END = new Date('2026-12-12T23:59:59').getTime();
     var shiftDateParsed = new Date(dateMatch[1] + ', 2026').getTime();
     var isInde232 = data.inde232 === true || data.inde232 === 'true';
+    var isSmopFellow = data.smopFellow === true || data.smopFellow === 'true';
     if (shiftDateParsed >= INDE232_START && shiftDateParsed <= INDE232_END) {
-      if (!isInde232 && !isMdPa) {
+      if (!isInde232 && !isMdPa && !isSmopFellow) {
         return 'This shift is reserved for INDE 232 students and MD/PA students.';
       }
       if (isMdPa && !isInde232) {

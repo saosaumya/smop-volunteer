@@ -199,7 +199,7 @@ export default function VolunteerSignUp() {
         const t = new Date(shift.startDateTime).getTime();
         if (t >= INDE232_START && t <= INDE232_END) {
           const isMdPa = form.studentType === 'md' || form.studentType === 'pa';
-          return form.inde232 || isMdPa;
+          return form.inde232 || isMdPa || form.smopFellow;
         }
         return true;
       });
@@ -412,7 +412,7 @@ export default function VolunteerSignUp() {
                     onChange={e => setForm(f => ({ ...f, smopFellow: e.target.checked, shifts: [] }))}
                     className="accent-cardinal"
                   />
-                  I am a SMOP Fellow
+                  I am a SMOP Fellow or SMOP Officer
                 </label>
               </div>
 
