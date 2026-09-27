@@ -718,6 +718,7 @@ function validateVolunteerCapacity_(sheet, data) {
   var MAX_SHIFTS_NON_MDPA = 8;
   if (!isMdPa) {
     var volunteerEmail = String(data.email || '').toLowerCase().trim();
+    var QUARTER_START = new Date('2026-09-22').getTime();
     var existingShiftCount = 0;
     for (var r = 1; r < rows.length; r++) {
       var rowEmail = String(rows[r][2] || '').toLowerCase().trim();
@@ -725,10 +726,22 @@ function validateVolunteerCapacity_(sheet, data) {
       var rowShifts = String(rows[r][7] || '');
       var rowLines = rowShifts.split('\n');
       for (var rl = 0; rl < rowLines.length; rl++) {
-        if (rowLines[rl].trim()) existingShiftCount++;
+        var rl_trimmed = rowLines[rl].trim();
+        if (!rl_trimmed) continue;
+        var rlDateMatch = rl_trimmed.match(/^[A-Za-z]+,\s+([A-Za-z]+\s+\d+)/);
+        if (rlDateMatch) {
+          var rlDate = new Date(rlDateMatch[1] + ', 2026').getTime();
+          if (rlDate < QUARTER_START) continue;
+        }
+        existingShiftCount++;
       }
     }
-    var newShiftCount = shiftLines.filter(function(l) { return l.trim(); }).length;
+    var newShiftCount = shiftLines.filter(function(l) {
+      if (!l.trim()) return false;
+      var m = l.trim().match(/^[A-Za-z]+,\s+([A-Za-z]+\s+\d+)/);
+      if (m) { return new Date(m[1] + ', 2026').getTime() >= QUARTER_START; }
+      return true;
+    }).length;
     if (existingShiftCount + newShiftCount > MAX_SHIFTS_NON_MDPA) {
       return 'You have already signed up for ' + existingShiftCount + ' shift(s). Non-MD/PA students are limited to ' + MAX_SHIFTS_NON_MDPA + ' shifts per quarter. You can sign up for ' + Math.max(0, MAX_SHIFTS_NON_MDPA - existingShiftCount) + ' more.';
     }
