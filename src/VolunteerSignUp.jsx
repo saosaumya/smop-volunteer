@@ -55,11 +55,11 @@ const allShifts = [
 ];
 
 const SITE_CAPACITY = {
-  "Hope's Corner": { drivers: 2, nonDrivers: 3 },
-  "Neighborhood Hands": { drivers: 3, nonDrivers: 3 },
-  "Helping Hands at Sunnyvale Public Library": { drivers: 3, nonDrivers: 3 },
-  "Hope for the Unhoused": { drivers: 3, nonDrivers: 3 },
-  "WeHOPE": { drivers: 2, nonDrivers: 3 },
+  "Hope's Corner": { drivers: 2, nonDrivers: 4 },
+  "Neighborhood Hands": { drivers: 3, nonDrivers: 4 },
+  "Helping Hands at Sunnyvale Public Library": { drivers: 3, nonDrivers: 4 },
+  "Hope for the Unhoused": { drivers: 3, nonDrivers: 4 },
+  "WeHOPE": { drivers: 2, nonDrivers: 4 },
 };
 
 const MD_PA_PRIORITY_SITES = ["Hope's Corner", 'Neighborhood Hands', 'Helping Hands at Sunnyvale Public Library'];
@@ -423,7 +423,7 @@ export default function VolunteerSignUp() {
                     onChange={e => setForm(f => ({ ...f, inde232: e.target.checked, shifts: [] }))}
                     className="accent-cardinal"
                   />
-                  I am enrolled in INDE 232 (Health Equity Education lunch seminar)
+                  I am enrolled in INDE 232 or OBGYN 133
                 </label>
               </div>
 
@@ -564,7 +564,7 @@ export default function VolunteerSignUp() {
                           <div className="text-xs text-gray-400 mt-1">
                             Spots: {filled}/{effectiveTotal} filled
                             {isMdPaOnly && (
-                              <span className="text-purple-600 font-semibold"> (2 MD/PA spots released — INDE 232 priority)</span>
+                              <span className="text-purple-600 font-semibold"> (2 MD/PA spots released — INDE 232 / OBGYN 133 priority)</span>
                             )}
                             {!isMdPaOnly && userNonDriverCap < s.effectiveNonDriverCap && (
                               <span className="text-purple-600 font-semibold"> (1 spot reserved for MD/PA)</span>

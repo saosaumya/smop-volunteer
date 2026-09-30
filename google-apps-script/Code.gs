@@ -670,11 +670,11 @@ function sendReminders_(sheetName, type) {
 
 function validateVolunteerCapacity_(sheet, data) {
   var SITE_CAPACITY = {
-    "Hope's Corner": { drivers: 2, nonDrivers: 3 },
-    "Neighborhood Hands": { drivers: 3, nonDrivers: 3 },
-    "Helping Hands at Sunnyvale Public Library": { drivers: 3, nonDrivers: 3 },
-    "Hope for the Unhoused": { drivers: 3, nonDrivers: 3 },
-    "WeHOPE": { drivers: 2, nonDrivers: 3 }
+    "Hope's Corner": { drivers: 2, nonDrivers: 4 },
+    "Neighborhood Hands": { drivers: 3, nonDrivers: 4 },
+    "Helping Hands at Sunnyvale Public Library": { drivers: 3, nonDrivers: 4 },
+    "Hope for the Unhoused": { drivers: 3, nonDrivers: 4 },
+    "WeHOPE": { drivers: 2, nonDrivers: 4 }
   };
   var MD_PA_PRIORITY_SITES = ["Hope's Corner", "Neighborhood Hands", "Helping Hands at Sunnyvale Public Library"];
   var MANDARIN_ONLY_SITE = "Hope's Corner";
@@ -759,7 +759,7 @@ function validateVolunteerCapacity_(sheet, data) {
 
     var key = dateMatch[1] + '|' + siteMatch[1];
     var site = siteMatch[1];
-    var cap = SITE_CAPACITY[site] || { drivers: 3, nonDrivers: 3 };
+    var cap = SITE_CAPACITY[site] || { drivers: 3, nonDrivers: 4 };
     var c = counts[key] || { drivers: 0, nonDrivers: 0, mdPaCount: 0, mandarinCount: 0 };
 
     // INDE 232 date range: Sep 22 – Dec 12, only INDE 232 or MD/PA (2 spots) allowed
@@ -770,7 +770,7 @@ function validateVolunteerCapacity_(sheet, data) {
     var isSmopFellow = data.smopFellow === true || data.smopFellow === 'true';
     if (shiftDateParsed >= INDE232_START && shiftDateParsed <= INDE232_END) {
       if (!isInde232 && !isMdPa && !isSmopFellow) {
-        return 'This shift is reserved for INDE 232 students and MD/PA students.';
+        return 'This shift is reserved for INDE 232 / OBGYN 133 students and MD/PA students.';
       }
       if (isMdPa && !isInde232) {
         var totalSignups = c.drivers + c.nonDrivers;
