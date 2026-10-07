@@ -209,6 +209,8 @@ export default function VolunteerSignUp() {
       .filter(shift => {
         const t = new Date(shift.startDateTime).getTime();
         if (t >= INDE232_START && t <= INDE232_END) {
+          const openSites = ['Peninsula Healthcare Connections', 'Family Community Church Fall Fest'];
+          if (openSites.includes(shift.site)) return true;
           const isMdPa = form.studentType === 'md' || form.studentType === 'pa';
           return form.inde232 || isMdPa || form.smopFellow;
         }

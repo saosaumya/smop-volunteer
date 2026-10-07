@@ -770,7 +770,8 @@ function validateVolunteerCapacity_(sheet, data) {
     var shiftDateParsed = new Date(dateMatch[1] + ', 2026').getTime();
     var isInde232 = data.inde232 === true || data.inde232 === 'true';
     var isSmopFellow = data.smopFellow === true || data.smopFellow === 'true';
-    if (shiftDateParsed >= INDE232_START && shiftDateParsed <= INDE232_END) {
+    var OPEN_SITES = ['Peninsula Healthcare Connections', 'Family Community Church Fall Fest'];
+    if (shiftDateParsed >= INDE232_START && shiftDateParsed <= INDE232_END && OPEN_SITES.indexOf(site) === -1) {
       if (!isInde232 && !isMdPa && !isSmopFellow) {
         return 'This shift is reserved for INDE 232 / OBGYN 133 students and MD/PA students.';
       }
