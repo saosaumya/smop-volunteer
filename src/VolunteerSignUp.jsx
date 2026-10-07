@@ -697,6 +697,26 @@ export default function VolunteerSignUp() {
                           )}
                         </div>
                         {(s.driverList?.length > 0 || s.nonDriverList?.length > 0) && (() => {
+                          const allPeople = [...(s.driverList || []), ...(s.nonDriverList || [])];
+                          const phoneList = allPeople.filter(p => p.phone).map(p => p.phone).join('\n');
+                          if (!phoneList) return null;
+                          return (
+                            <div className="mt-1.5 border-t border-gray-100 pt-1.5">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="text-xs font-medium text-gray-600">Phone Numbers (for group chat)</span>
+                                <button
+                                  type="button"
+                                  onClick={() => { navigator.clipboard.writeText(phoneList); }}
+                                  className="text-xs text-cardinal hover:text-cardinal-dark font-medium px-2 py-0.5 rounded border border-cardinal/30 hover:bg-cardinal/5"
+                                >
+                                  Copy Phones
+                                </button>
+                              </div>
+                              <pre className="text-xs text-gray-500 whitespace-pre-wrap bg-gray-50 rounded p-2">{phoneList}</pre>
+                            </div>
+                          );
+                        })()}
+                        {(s.driverList?.length > 0 || s.nonDriverList?.length > 0) && (() => {
                           const eventLeadName = s.eventLead || '[EVENT LEAD NAME]';
                           const allPeople = [...(s.driverList || []), ...(s.nonDriverList || [])];
                           const eventLeadPerson = allPeople.find(p => p.name === s.eventLead);
