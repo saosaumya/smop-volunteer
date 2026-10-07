@@ -676,7 +676,8 @@ function validateVolunteerCapacity_(sheet, data) {
     "Hope for the Unhoused": { drivers: 3, nonDrivers: 4 },
     "WeHOPE": { drivers: 2, nonDrivers: 4 },
     "Peninsula Healthcare Connections": { drivers: 0, nonDrivers: 4 },
-    "Family Community Church Fall Fest": { drivers: 2, nonDrivers: 4, driverRatio: 2 }
+    "Family Community Church Fall Fest": { drivers: 2, nonDrivers: 4, driverRatio: 2 },
+    "WeHOPE Berryessa Safe RV Parking": { drivers: 3, nonDrivers: 4 }
   };
   var MD_PA_PRIORITY_SITES = ["Hope's Corner", "Neighborhood Hands", "Helping Hands at Sunnyvale Public Library"];
   var MANDARIN_ONLY_SITE = "Hope's Corner";
@@ -770,7 +771,7 @@ function validateVolunteerCapacity_(sheet, data) {
     var shiftDateParsed = new Date(dateMatch[1] + ', 2026').getTime();
     var isInde232 = data.inde232 === true || data.inde232 === 'true';
     var isSmopFellow = data.smopFellow === true || data.smopFellow === 'true';
-    var OPEN_SITES = ['Peninsula Healthcare Connections', 'Family Community Church Fall Fest'];
+    var OPEN_SITES = ['Peninsula Healthcare Connections', 'Family Community Church Fall Fest', 'WeHOPE Berryessa Safe RV Parking'];
     if (shiftDateParsed >= INDE232_START && shiftDateParsed <= INDE232_END && OPEN_SITES.indexOf(site) === -1) {
       if (!isInde232 && !isMdPa && !isSmopFellow) {
         return 'This shift is reserved for INDE 232 / OBGYN 133 students and MD/PA students.';

@@ -42,6 +42,7 @@ const allShifts = [
   { date: 'Saturday, October 31', startDateTime: '2026-10-31T07:30:00', time: '7:30 – 10:45 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
   { date: 'Saturday, October 31', startDateTime: '2026-10-31T10:45:00', time: '10:45 am – 1:30 pm', site: 'Helping Hands at Sunnyvale Public Library', address: '665 W Olive Ave, Sunnyvale, CA 94086' },
   { date: 'Sunday, November 1', startDateTime: '2026-11-01T09:40:00', time: '9:40 am – 1:15 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
+  { date: 'Sunday, November 8', startDateTime: '2026-11-08T09:40:00', time: '9:40 am – 1:15 pm', site: 'WeHOPE Berryessa Safe RV Parking', address: '1300 Berryessa Rd, San Jose, CA 95133' },
   { date: 'Tuesday, November 10', startDateTime: '2026-11-10T17:15:00', time: '5:15 – 7:45 pm', site: 'WeHOPE', address: '1854 Bay Road, East Palo Alto, CA 94303' },
   { date: 'Saturday, November 14', startDateTime: '2026-11-14T07:00:00', time: '7:00 – 10:30 am', site: "Hope's Corner", address: '748 Mercy St, Mountain View, CA 94041' },
   { date: 'Saturday, November 14', startDateTime: '2026-11-14T07:30:00', time: '7:30 – 10:45 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
@@ -49,6 +50,7 @@ const allShifts = [
   { date: 'Saturday, November 28', startDateTime: '2026-11-28T07:30:00', time: '7:30 – 10:45 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
   { date: 'Saturday, November 28', startDateTime: '2026-11-28T10:45:00', time: '10:45 am – 1:30 pm', site: 'Helping Hands at Sunnyvale Public Library', address: '665 W Olive Ave, Sunnyvale, CA 94086' },
   { date: 'Sunday, November 29', startDateTime: '2026-11-29T09:40:00', time: '9:40 am – 1:15 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
+  { date: 'Sunday, December 6', startDateTime: '2026-12-06T09:40:00', time: '9:40 am – 1:15 pm', site: 'WeHOPE Berryessa Safe RV Parking', address: '1300 Berryessa Rd, San Jose, CA 95133' },
   { date: 'Tuesday, December 8', startDateTime: '2026-12-08T17:15:00', time: '5:15 – 7:45 pm', site: 'WeHOPE', address: '1854 Bay Road, East Palo Alto, CA 94303' },
   { date: 'Saturday, December 12', startDateTime: '2026-12-12T07:00:00', time: '7:00 – 10:30 am', site: "Hope's Corner", address: '748 Mercy St, Mountain View, CA 94041' },
   { date: 'Saturday, December 12', startDateTime: '2026-12-12T07:30:00', time: '7:30 – 10:45 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
@@ -65,6 +67,7 @@ const SITE_CAPACITY = {
   "WeHOPE": { drivers: 2, nonDrivers: 4 },
   "Peninsula Healthcare Connections": { drivers: 0, nonDrivers: 4 },
   "Family Community Church Fall Fest": { drivers: 2, nonDrivers: 4, driverRatio: 2 },
+  "WeHOPE Berryessa Safe RV Parking": { drivers: 3, nonDrivers: 4 },
 };
 
 const MD_PA_PRIORITY_SITES = ["Hope's Corner", 'Neighborhood Hands', 'Helping Hands at Sunnyvale Public Library'];
@@ -209,7 +212,7 @@ export default function VolunteerSignUp() {
       .filter(shift => {
         const t = new Date(shift.startDateTime).getTime();
         if (t >= INDE232_START && t <= INDE232_END) {
-          const openSites = ['Peninsula Healthcare Connections', 'Family Community Church Fall Fest'];
+          const openSites = ['Peninsula Healthcare Connections', 'Family Community Church Fall Fest', 'WeHOPE Berryessa Safe RV Parking'];
           if (openSites.includes(shift.site)) return true;
           const isMdPa = form.studentType === 'md' || form.studentType === 'pa';
           return form.inde232 || isMdPa || form.smopFellow;
@@ -714,6 +717,7 @@ export default function VolunteerSignUp() {
                             "WeHOPE": `Drivers, the location to drive to is WeHOPE: 1854 Bay Road, East Palo Alto, CA 94303`,
                             "Helping Hands at Sunnyvale Public Library": `Drivers, the location to drive to is Sunnyvale Public Library, 665 W Olive Ave`,
                             "Family Community Church Fall Fest": `Drivers, the location to drive to is Family Community Church: 478 Piercy Road, San Jose, CA 95138`,
+                            "WeHOPE Berryessa Safe RV Parking": `Drivers, the location to drive to is WeHOPE Berryessa Safe RV Parking: 1300 Berryessa Rd, San Jose, CA 95133`,
                           };
                           const driverInfo = driverInstructions[shift.site] || `Drivers, the location to drive to is ${shift.address}.`;
                           const script = `Hey everyone! I'm Laura, volunteer coordinator of SMOP. I won't be at the volunteer outreach event this ${eventDay}, but the event lead is ${eventLeadName} (${eventLeadPhone}) in this group chat. Thanks so much for volunteering with us!\n\n${driverNames} please park in the handicap spots closest to LK so we can load the cars with supplies - put your hazards on to prevent getting a ticket. Once we load up the cars and volunteers:\n\n${driverInfo}\n\n${badgeNames} - you have signed up for badge access to LKSC. Please make sure you bring your badge so that we have access to our supplies. If you cancel your shift, please make sure the volunteer coordinator is aware because we cannot access supplies without a badge.\n\nAll, please arrive at LK by ${meetTime}. We will load up cars from LK.\n\nDress code: Stanford Med or Stanford shirt (SMOP Shirt if you have one); casual but appropriate pants; closed-toed shoes.\n\nTo do on the car-ride there:\n\n1. Please review this Google Form that must be filled out for EVERY client we serve– this information must be reported to the Santa Clara Health Department and other funders to continue receiving donations. Not filling out this form for all clients really hurts our program.\nhttps://docs.google.com/forms/d/e/1FAIpQLSdYhnQ-mjQflrueQGOLF82aiJUQ6H8Gz3Mxuv0zZD4c-dI71w/viewform?usp=dialog\n\n2. Watch the below trainings (on x2 speed)\nhttps://drive.google.com/file/d/1bUnQ-kZso7s_hqsehG9G7k5m5pWyiLaX/view?usp=sharing\nhttps://drive.google.com/file/d/1Dfl8FcfNY7rQzZLzLYvsiEBHvlaJx_Gg/view?usp=sharing\n\nWhen you arrive: Text when you arrive! If you have badge access, head up to 4th floor and retrieve supplies for respective location. If you don't, go to LK outside stairs until someone lets you in.\n\nFailure to alert us of cancellations by the end of today will result in being unable to volunteer for the remainder of the quarter.`;
