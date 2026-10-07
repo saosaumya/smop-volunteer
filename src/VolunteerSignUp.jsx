@@ -34,8 +34,11 @@ const allShifts = [
   { date: 'Sunday, October 4', startDateTime: '2026-10-04T09:40:00', time: '9:40 am – 1:15 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
   { date: 'Saturday, October 10', startDateTime: '2026-10-10T07:00:00', time: '7:00 – 10:30 am', site: "Hope's Corner", address: '748 Mercy St, Mountain View, CA 94041' },
   { date: 'Tuesday, October 13', startDateTime: '2026-10-13T17:15:00', time: '5:15 – 7:45 pm', site: 'WeHOPE', address: '1854 Bay Road, East Palo Alto, CA 94303' },
+  { date: 'Wednesday, October 14', startDateTime: '2026-10-14T09:30:00', time: '9:30 am – 12:30 pm', site: 'Peninsula Healthcare Connections', address: 'The Opportunity Center, 33 Encina Ave, Palo Alto, CA 94301' },
   { date: 'Saturday, October 17', startDateTime: '2026-10-17T07:30:00', time: '7:30 – 10:45 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
   { date: 'Sunday, October 18', startDateTime: '2026-10-18T09:40:00', time: '9:40 am – 1:15 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
+  { date: 'Wednesday, October 21', startDateTime: '2026-10-21T09:30:00', time: '9:30 am – 12:30 pm', site: 'Peninsula Healthcare Connections', address: 'The Opportunity Center, 33 Encina Ave, Palo Alto, CA 94301' },
+  { date: 'Sunday, October 25', startDateTime: '2026-10-25T11:30:00', time: '11:30 am – 2:00 pm', site: 'Family Community Church Fall Fest', address: '478 Piercy Road, San Jose, CA 95138' },
   { date: 'Saturday, October 31', startDateTime: '2026-10-31T07:30:00', time: '7:30 – 10:45 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
   { date: 'Saturday, October 31', startDateTime: '2026-10-31T10:45:00', time: '10:45 am – 1:30 pm', site: 'Helping Hands at Sunnyvale Public Library', address: '665 W Olive Ave, Sunnyvale, CA 94086' },
   { date: 'Sunday, November 1', startDateTime: '2026-11-01T09:40:00', time: '9:40 am – 1:15 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
@@ -60,6 +63,8 @@ const SITE_CAPACITY = {
   "Helping Hands at Sunnyvale Public Library": { drivers: 3, nonDrivers: 4 },
   "Hope for the Unhoused": { drivers: 3, nonDrivers: 4 },
   "WeHOPE": { drivers: 2, nonDrivers: 4 },
+  "Peninsula Healthcare Connections": { drivers: 0, nonDrivers: 4 },
+  "Family Community Church Fall Fest": { drivers: 2, nonDrivers: 4, driverRatio: 2 },
 };
 
 const MD_PA_PRIORITY_SITES = ["Hope's Corner", 'Neighborhood Hands', 'Helping Hands at Sunnyvale Public Library'];
@@ -104,6 +109,12 @@ function formatShiftDetails(shift) {
   if (!/am|pm/i.test(meetTime)) {
     const suffix = returnTime.match(/(am|pm)/i);
     if (suffix) meetTime += ' ' + suffix[1];
+  }
+  if (shift.site === 'Peninsula Healthcare Connections') {
+    return `Meet at The Opportunity Center (33 Encina Ave, Palo Alto — next to Trader Joe's near campus) at ${meetTime}. We are joining Peninsula Healthcare Connections to walk around Palo Alto and speak to community members about mobile healthcare needs. Event ends at ${returnTime}.`;
+  }
+  if (shift.site === 'Family Community Church Fall Fest') {
+    return `Meet at LKSC at ${meetTime}. We will drive to Family Community Church at ${shift.address} to share health and wellness information at their Family Fall Fest. Event ends at ${returnTime}.`;
   }
   return `Meet at LKSC at ${meetTime}. Return to LKSC at ${returnTime}. We depart and return as a team to and from LKSC. The event is located at ${shift.address}.`;
 }
@@ -241,8 +252,9 @@ export default function VolunteerSignUp() {
         }
       }
     });
-    const cap = SITE_CAPACITY[shift.site] || { drivers: 3, nonDrivers: 3 };
-    return { ...merged, capDrivers: cap.drivers, capNonDrivers: cap.nonDrivers, effectiveNonDriverCap: cap.nonDrivers };
+    const cap = SITE_CAPACITY[shift.site] || { drivers: 3, nonDrivers: 4 };
+    const effectiveNonDriverCap = cap.driverRatio ? Math.min(cap.nonDrivers, merged.drivers * cap.driverRatio) : cap.nonDrivers;
+    return { ...merged, capDrivers: cap.drivers, capNonDrivers: cap.nonDrivers, effectiveNonDriverCap };
   }
 
   function getUserNonDriverCap(shift) {
@@ -329,6 +341,13 @@ export default function VolunteerSignUp() {
         <div className="max-w-2xl mx-auto px-4">
           <h1 className="text-3xl font-bold mb-2">Stanford Medicine Outreach Program</h1>
           <p className="text-white/80">Volunteer Sign-Up</p>
+        </div>
+      </div>
+
+      <div className="max-w-2xl mx-auto px-4 mt-4">
+        <div className="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4 text-center">
+          <p className="text-yellow-900 font-bold text-lg">Sign-ups close the Thursday before the event at noon!</p>
+          <p className="text-yellow-800 text-sm mt-1">Please do not sign up later than that, as our volunteer coordinator sends out volunteer info on Thursday afternoons/evenings and it is a lot of added work for our coordinator to get you caught up to speed if you are added later.</p>
         </div>
       </div>
 
@@ -686,7 +705,16 @@ export default function VolunteerSignUp() {
                             if (suffix) meetTime += ' ' + suffix[1];
                           }
                           const eventDay = shift.date.split(',')[0];
-                          const script = `Hey everyone! I'm Laura, volunteer coordinator of SMOP. I won't be at the volunteer outreach event this ${eventDay}, but the event lead is ${eventLeadName} (${eventLeadPhone}) in this group chat. Thanks so much for volunteering with us!\n\n${driverNames} please park in the handicap spots closest to LK so we can load the cars with supplies - put your hazards on to prevent getting a ticket. Once we load up the cars and volunteers, the location to drive to is ${shift.address}.\n\n${badgeNames} - you have signed up for badge access to LKSC. Please make sure you bring your badge so that we have access to our supplies. If you cancel your shift, please make sure the volunteer coordinator is aware because we cannot access supplies without a badge.\n\nAll, please arrive at LK by ${meetTime}. We will load up cars from LK.\n\nDress code: Stanford Med or Stanford shirt (SMOP Shirt if you have one); casual but appropriate pants; closed-toed shoes.\n\nTo do on the car-ride there:\n\n1. Please review this Google Form that must be filled out for EVERY client we serve– this information must be reported to the Santa Clara Health Department and other funders to continue receiving donations. Not filling out this form for all clients really hurts our program.\nhttps://docs.google.com/forms/d/e/1FAIpQLSdYhnQ-mjQflrueQGOLF82aiJUQ6H8Gz3Mxuv0zZD4c-dI71w/viewform?usp=dialog\n\n2. Watch the below trainings (on x2 speed)\nhttps://drive.google.com/file/d/1bUnQ-kZso7s_hqsehG9G7k5m5pWyiLaX/view?usp=sharing\nhttps://drive.google.com/file/d/1Dfl8FcfNY7rQzZLzLYvsiEBHvlaJx_Gg/view?usp=sharing\n\nWhen you arrive: Text when you arrive! If you have badge access, head up to 4th floor and retrieve supplies for respective location. If you don't, go to LK outside stairs until someone lets you in.\n\nFailure to alert us of cancellations by the end of today will result in being unable to volunteer for the remainder of the quarter.`;
+                          const driverInstructions = {
+                            "Hope's Corner": `Drivers, the location to drive to is Hope's Corner: 748 Mercy St, Mountain View, CA 94041. Park anywhere in the parking lot.`,
+                            "Neighborhood Hands": `Drivers: The location is the 500 Coleman Ave, San Jose, CA 95110 United States. Please unload supplies and riders there, and then go park. Free parking is available across the street in the mall plaza at 543 Coleman Ave, San Jose, CA 95110.`,
+                            "Hope for the Unhoused": `Drivers: The location is 1432 S Main St, Milpitas, CA 95035 and parking is in the lot right next to it at 1480 Main St.`,
+                            "WeHOPE": `Drivers, the location to drive to is WeHOPE: 1854 Bay Road, East Palo Alto, CA 94303`,
+                            "Helping Hands at Sunnyvale Public Library": `Drivers, the location to drive to is Sunnyvale Public Library, 665 W Olive Ave`,
+                            "Family Community Church Fall Fest": `Drivers, the location to drive to is Family Community Church: 478 Piercy Road, San Jose, CA 95138`,
+                          };
+                          const driverInfo = driverInstructions[shift.site] || `Drivers, the location to drive to is ${shift.address}.`;
+                          const script = `Hey everyone! I'm Laura, volunteer coordinator of SMOP. I won't be at the volunteer outreach event this ${eventDay}, but the event lead is ${eventLeadName} (${eventLeadPhone}) in this group chat. Thanks so much for volunteering with us!\n\n${driverNames} please park in the handicap spots closest to LK so we can load the cars with supplies - put your hazards on to prevent getting a ticket. Once we load up the cars and volunteers:\n\n${driverInfo}\n\n${badgeNames} - you have signed up for badge access to LKSC. Please make sure you bring your badge so that we have access to our supplies. If you cancel your shift, please make sure the volunteer coordinator is aware because we cannot access supplies without a badge.\n\nAll, please arrive at LK by ${meetTime}. We will load up cars from LK.\n\nDress code: Stanford Med or Stanford shirt (SMOP Shirt if you have one); casual but appropriate pants; closed-toed shoes.\n\nTo do on the car-ride there:\n\n1. Please review this Google Form that must be filled out for EVERY client we serve– this information must be reported to the Santa Clara Health Department and other funders to continue receiving donations. Not filling out this form for all clients really hurts our program.\nhttps://docs.google.com/forms/d/e/1FAIpQLSdYhnQ-mjQflrueQGOLF82aiJUQ6H8Gz3Mxuv0zZD4c-dI71w/viewform?usp=dialog\n\n2. Watch the below trainings (on x2 speed)\nhttps://drive.google.com/file/d/1bUnQ-kZso7s_hqsehG9G7k5m5pWyiLaX/view?usp=sharing\nhttps://drive.google.com/file/d/1Dfl8FcfNY7rQzZLzLYvsiEBHvlaJx_Gg/view?usp=sharing\n\nWhen you arrive: Text when you arrive! If you have badge access, head up to 4th floor and retrieve supplies for respective location. If you don't, go to LK outside stairs until someone lets you in.\n\nFailure to alert us of cancellations by the end of today will result in being unable to volunteer for the remainder of the quarter.`;
                           return (
                             <div className="mt-2 border-t border-gray-100 pt-2">
                               <div className="flex items-center justify-between mb-1">

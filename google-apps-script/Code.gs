@@ -674,7 +674,9 @@ function validateVolunteerCapacity_(sheet, data) {
     "Neighborhood Hands": { drivers: 3, nonDrivers: 4 },
     "Helping Hands at Sunnyvale Public Library": { drivers: 3, nonDrivers: 4 },
     "Hope for the Unhoused": { drivers: 3, nonDrivers: 4 },
-    "WeHOPE": { drivers: 2, nonDrivers: 4 }
+    "WeHOPE": { drivers: 2, nonDrivers: 4 },
+    "Peninsula Healthcare Connections": { drivers: 0, nonDrivers: 4 },
+    "Family Community Church Fall Fest": { drivers: 2, nonDrivers: 4, driverRatio: 2 }
   };
   var MD_PA_PRIORITY_SITES = ["Hope's Corner", "Neighborhood Hands", "Helping Hands at Sunnyvale Public Library"];
   var MANDARIN_ONLY_SITE = "Hope's Corner";
@@ -785,7 +787,7 @@ function validateVolunteerCapacity_(sheet, data) {
         return 'Driver spots are full for ' + line;
       }
     } else {
-      var effectiveNonDriverCap = cap.nonDrivers;
+      var effectiveNonDriverCap = cap.driverRatio ? Math.min(cap.nonDrivers, c.drivers * cap.driverRatio) : cap.nonDrivers;
 
       // Reserve 1 spot for MD/PA at priority sites if none signed up yet
       var userNonDriverCap = effectiveNonDriverCap;
