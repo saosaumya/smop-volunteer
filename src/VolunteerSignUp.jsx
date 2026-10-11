@@ -806,6 +806,50 @@ export default function VolunteerSignUp() {
           </form>
         )}
 
+        <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <h2 className="text-lg font-semibold text-gray-800 mb-1">Non-Medical Volunteering with Our SMOP Community Partners</h2>
+          <p className="text-sm text-gray-500 mb-4">Additional volunteer opportunities through organizations we partner with.</p>
+
+          <div className="border border-gray-200 rounded-lg p-4">
+            <h3 className="text-md font-semibold text-gray-800">Peninsula Healthcare Connection — Downtown Food Closet</h3>
+            <p className="text-xs text-gray-500 mt-1">Palo Alto · Wednesdays, Thursdays, and Fridays</p>
+
+            <div className="mt-3 space-y-2">
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                <div className="flex-1">
+                  <div className="text-sm font-medium text-gray-700">Morning Shift</div>
+                  <div className="text-xs text-gray-500">10:00 AM – 12:00 PM</div>
+                </div>
+                <a
+                  href="https://peninsulahcc.org/engage/food-closet-volunteer-resources/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-cardinal text-white text-xs font-semibold px-4 py-2 rounded-lg hover:bg-cardinal-dark transition-colors"
+                >
+                  Sign Up
+                </a>
+              </div>
+
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                <div className="flex-1">
+                  <div className="text-sm font-medium text-gray-700">Afternoon Shift</div>
+                  <div className="text-xs text-gray-500">12:00 PM – 2:30 PM</div>
+                </div>
+                <a
+                  href="https://peninsulahcc.org/engage/food-closet-volunteer-resources/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-cardinal text-white text-xs font-semibold px-4 py-2 rounded-lg hover:bg-cardinal-dark transition-colors"
+                >
+                  Sign Up
+                </a>
+              </div>
+            </div>
+
+            <p className="text-xs text-gray-400 mt-2 italic">Shift times are flexible by around 15–30 minutes. Sign up directly through Peninsula Healthcare Connection's website.</p>
+          </div>
+        </div>
+
         {pastShifts.length > 0 && (
           <div className="mt-8">
             <button

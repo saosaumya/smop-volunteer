@@ -176,7 +176,7 @@ function doPost(e) {
           + 'A calendar invite has been sent separately and should appear on your calendar automatically.\n'
           + 'You will receive reminder emails at 1 week, 3 days, and 1 day before each shift.\n\n'
           + 'A coordinator will be in touch before the event with details about transportation from LKSC and what to bring.\n\n'
-          + 'If you have any questions, email us at stanford.h.outreach@gmail.com.\n\n'
+          + 'If you have any questions, email our volunteer coordinator, Laura, at lauratjy@stanford.edu.\n\n'
           + 'Thank you!\nSMOP Team',
         name: 'SMOP Volunteer Coordination'
       });
