@@ -514,9 +514,9 @@ export default function VolunteerSignUp() {
                   <p className="text-gray-500 text-sm italic py-4 text-center">No shifts available. Please check back soon.</p>
                 )}
                 {availableShifts.map((shift, i) => {
+                  if (isShiftFull(shift) && !form.shifts.includes(i)) return null;
                   const tag = getSiteTag(shift, form);
                   const s = getShiftStatus(shift);
-                  const full = isShiftFull(shift);
                   const slot = getSlotForUser(shift);
 
                   const hasPeople = (s.driverList && s.driverList.length > 0) || (s.nonDriverList && s.nonDriverList.length > 0);
@@ -532,13 +532,11 @@ export default function VolunteerSignUp() {
                           type="checkbox" checked={form.shifts.includes(i)}
                           onChange={() => handleShiftToggle(i)}
                           className="accent-cardinal mt-0.5"
-                          disabled={full && !form.shifts.includes(i)}
                         />
                         <div className="flex-1">
                           <div>
                             <span className="font-medium">{shift.date}</span> — {shift.site}
-                            {full && <span className="ml-2 text-xs font-semibold text-red-600">FULL</span>}
-                            {tag && !full && (
+                            {tag && (
                               <span className={`ml-2 text-xs font-semibold px-2 py-0.5 rounded-full ${tag.color}`}>{tag.text}</span>
                             )}
                           </div>
