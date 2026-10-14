@@ -679,7 +679,6 @@ function validateVolunteerCapacity_(sheet, data) {
     "Family Community Church Fall Fest": { drivers: 2, nonDrivers: 4, driverRatio: 2 },
     "WeHOPE Berryessa Safe RV Parking": { drivers: 3, nonDrivers: 4 }
   };
-  var MD_PA_PRIORITY_SITES = ["Hope's Corner", "Neighborhood Hands", "Helping Hands at Sunnyvale Public Library"];
   var MANDARIN_ONLY_SITE = "Hope's Corner";
 
   // Build current counts per shift from existing sheet data
@@ -765,25 +764,6 @@ function validateVolunteerCapacity_(sheet, data) {
     var cap = SITE_CAPACITY[site] || { drivers: 3, nonDrivers: 4 };
     var c = counts[key] || { drivers: 0, nonDrivers: 0, mdPaCount: 0, mandarinCount: 0 };
 
-    // INDE 232 date range: Sep 22 – Dec 12, only INDE 232 or MD/PA (2 spots) allowed
-    var INDE232_START = new Date('2026-09-22').getTime();
-    var INDE232_END = new Date('2026-12-12T23:59:59').getTime();
-    var shiftDateParsed = new Date(dateMatch[1] + ', 2026').getTime();
-    var isInde232 = data.inde232 === true || data.inde232 === 'true';
-    var isSmopFellow = data.smopFellow === true || data.smopFellow === 'true';
-    var OPEN_SITES = ['Peninsula Healthcare Connections', 'Family Community Church Fall Fest', 'WeHOPE Berryessa Safe RV Parking'];
-    if (shiftDateParsed >= INDE232_START && shiftDateParsed <= INDE232_END && OPEN_SITES.indexOf(site) === -1) {
-      if (!isInde232 && !isMdPa && !isSmopFellow) {
-        return 'This shift is reserved for INDE 232 / OBGYN 133 students and MD/PA students.';
-      }
-      if (isMdPa && !isInde232) {
-        var totalSignups = c.drivers + c.nonDrivers;
-        if (totalSignups >= 2) {
-          return 'MD/PA spots are full for this INDE 232 shift: ' + line;
-        }
-      }
-    }
-
     if (canDrive) {
       if (c.drivers >= cap.drivers) {
         return 'Driver spots are full for ' + line;
@@ -791,10 +771,11 @@ function validateVolunteerCapacity_(sheet, data) {
     } else {
       var effectiveNonDriverCap = cap.driverRatio ? Math.min(cap.nonDrivers, c.drivers * cap.driverRatio) : cap.nonDrivers;
 
-      // Reserve 1 spot for MD/PA at priority sites if none signed up yet
+      // Reserve 2 spots for MD/PA students on every shift
       var userNonDriverCap = effectiveNonDriverCap;
-      if (!isMdPa && MD_PA_PRIORITY_SITES.indexOf(site) !== -1 && c.mdPaCount === 0) {
-        userNonDriverCap = Math.max(0, effectiveNonDriverCap - 1);
+      if (!isMdPa) {
+        var reserved = Math.max(0, 2 - (c.mdPaCount || 0));
+        userNonDriverCap = Math.max(0, effectiveNonDriverCap - reserved);
       }
 
       if (c.nonDrivers >= userNonDriverCap) {

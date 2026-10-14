@@ -70,7 +70,6 @@ const SITE_CAPACITY = {
   "WeHOPE Berryessa Safe RV Parking": { drivers: 3, nonDrivers: 4 },
 };
 
-const MD_PA_PRIORITY_SITES = ["Hope's Corner", 'Neighborhood Hands', 'Helping Hands at Sunnyvale Public Library'];
 const MANDARIN_ONLY_SITE = "Hope's Corner";
 const SPANISH_PRIORITY_SITES = ['Neighborhood Hands', 'Hope for the Unhoused'];
 
@@ -86,9 +85,6 @@ function getSiteTag(shift, form) {
 
   if (speaksMandarin && !isFellow && shift.site === MANDARIN_ONLY_SITE) {
     return { text: 'Mandarin speakers needed here', color: 'text-green-700 bg-green-50' };
-  }
-  if (isMdPa && MD_PA_PRIORITY_SITES.includes(shift.site)) {
-    return { text: 'Priority for MD/PA students', color: 'text-purple-700 bg-purple-50' };
   }
   if (speaksSpanish && SPANISH_PRIORITY_SITES.includes(shift.site)) {
     return { text: 'Spanish speakers most needed', color: 'text-blue-700 bg-blue-50' };
@@ -122,7 +118,7 @@ function formatShiftDetails(shift) {
   return `Meet at LKSC at ${meetTime}. Return to LKSC at ${returnTime}. We depart and return as a team to and from LKSC. The event is located at ${shift.address}.`;
 }
 
-const SAVED_FIELDS = ['name', 'email', 'phone', 'studentType', 'smopFellow', 'inde232', 'languages', 'canDrive', 'hasBadgeAccess', 'isEventLead'];
+const SAVED_FIELDS = ['name', 'email', 'phone', 'studentType', 'smopFellow', 'languages', 'canDrive', 'hasBadgeAccess', 'isEventLead'];
 const STORAGE_KEY = 'smop-volunteer-info';
 
 function loadSavedInfo() {
@@ -147,7 +143,6 @@ export default function VolunteerSignUp() {
       phone: '',
       studentType: '',
       smopFellow: false,
-      inde232: false,
       languages: [],
       canDrive: false,
       hasBadgeAccess: false,
@@ -171,11 +166,7 @@ export default function VolunteerSignUp() {
   }, []);
 
   const now = Date.now();
-  const SIGNUPS_HIDDEN_BEFORE = new Date('2026-07-27T00:00:00').getTime();
-  const INDE232_START = new Date('2026-09-22T00:00:00').getTime();
-  const INDE232_END = new Date('2026-12-12T23:59:59').getTime();
   const futureShifts = allShifts.filter(s => new Date(s.startDateTime).getTime() > now);
-  const hiddenShifts = futureShifts.filter(s => new Date(s.startDateTime).getTime() < SIGNUPS_HIDDEN_BEFORE);
   const pastShifts = allShifts.filter(s => new Date(s.startDateTime).getTime() <= now);
   const [showPast, setShowPast] = useState(false);
   const [showCoordinator, setShowCoordinator] = useState(false);
@@ -207,19 +198,8 @@ export default function VolunteerSignUp() {
 
   const availableShifts = useMemo(() => {
     return futureShifts
-      .filter(s => new Date(s.startDateTime).getTime() >= SIGNUPS_HIDDEN_BEFORE)
-      .filter(shift => isShiftAllowed(shift, form))
-      .filter(shift => {
-        const t = new Date(shift.startDateTime).getTime();
-        if (t >= INDE232_START && t <= INDE232_END) {
-          const openSites = ['Peninsula Healthcare Connections', 'Family Community Church Fall Fest', 'WeHOPE Berryessa Safe RV Parking'];
-          if (openSites.includes(shift.site)) return true;
-          const isMdPa = form.studentType === 'md' || form.studentType === 'pa';
-          return form.inde232 || isMdPa || form.smopFellow;
-        }
-        return true;
-      });
-  }, [futureShifts, form.languages, form.smopFellow, form.inde232]);
+      .filter(shift => isShiftAllowed(shift, form));
+  }, [futureShifts, form.languages, form.smopFellow]);
 
   const handleLanguageToggle = (lang) => {
     setForm(prev => ({
@@ -265,8 +245,10 @@ export default function VolunteerSignUp() {
   function getUserNonDriverCap(shift) {
     const s = getShiftStatus(shift);
     const isMdPa = form.studentType === 'md' || form.studentType === 'pa';
-    if (!isMdPa && MD_PA_PRIORITY_SITES.includes(shift.site) && !(s.mdPaCount > 0)) {
-      return Math.max(0, s.effectiveNonDriverCap - 1);
+    if (!isMdPa) {
+      const mdPaCount = s.mdPaCount || 0;
+      const reserved = Math.max(0, 2 - mdPaCount);
+      return Math.max(0, s.effectiveNonDriverCap - reserved);
     }
     return s.effectiveNonDriverCap;
   }
@@ -315,7 +297,6 @@ export default function VolunteerSignUp() {
           phone: form.phone,
           studentType: form.studentType,
           smopFellow: form.smopFellow,
-          inde232: form.inde232,
           languages: form.languages,
           canDrive: form.canDrive,
           hasBadgeAccess: form.hasBadgeAccess,
@@ -377,7 +358,7 @@ export default function VolunteerSignUp() {
               Questions? Email <a href="mailto:stanford.h.outreach@gmail.com" className="text-cardinal hover:underline">stanford.h.outreach@gmail.com</a>
             </p>
             <button
-              onClick={() => { setStatus('idle'); setForm({ name: '', email: '', phone: '', studentType: '', smopFellow: false, inde232: false, languages: [], canDrive: false, hasBadgeAccess: false, isEventLead: false, shifts: [], notes: '' }); }}
+              onClick={() => { setStatus('idle'); setForm({ name: '', email: '', phone: '', studentType: '', smopFellow: false, languages: [], canDrive: false, hasBadgeAccess: false, isEventLead: false, shifts: [], notes: '' }); }}
               className="mt-6 text-sm text-cardinal font-semibold hover:underline"
             >
               Sign up for more shifts
@@ -437,17 +418,6 @@ export default function VolunteerSignUp() {
                     className="accent-cardinal"
                   />
                   I am a SMOP Fellow or SMOP Officer
-                </label>
-              </div>
-
-              <div>
-                <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                  <input
-                    type="checkbox" checked={form.inde232}
-                    onChange={e => setForm(f => ({ ...f, inde232: e.target.checked, shifts: [] }))}
-                    className="accent-cardinal"
-                  />
-                  I am enrolled in INDE 232 or OBGYN 133
                 </label>
               </div>
 
@@ -525,15 +495,6 @@ export default function VolunteerSignUp() {
               </div>
             )}
 
-            {(form.studentType === 'md' || form.studentType === 'pa') && (
-              <div className="flex items-start gap-3 bg-purple-50 border border-purple-200 rounded-lg px-4 py-3">
-                <HiInformationCircle className="text-purple-600 shrink-0 mt-0.5" size={18} />
-                <p className="text-sm text-purple-800">
-                  MD and PA students are prioritized at Hope's Corner, Neighborhood Hands, and Sunnyvale. These sites benefit most from your clinical training. You can still sign up for other sites if available.
-                </p>
-              </div>
-            )}
-
             {form.studentType && form.studentType !== 'md' && form.studentType !== 'pa' && (
               <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
                 <HiInformationCircle className="text-blue-600 shrink-0 mt-0.5" size={18} />
@@ -560,14 +521,9 @@ export default function VolunteerSignUp() {
 
                   const hasPeople = (s.driverList && s.driverList.length > 0) || (s.nonDriverList && s.nonDriverList.length > 0);
 
-                  const shiftTime = new Date(shift.startDateTime).getTime();
-                  const isInde232Shift = shiftTime >= INDE232_START && shiftTime <= INDE232_END;
-                  const isMdPaUser = form.studentType === 'md' || form.studentType === 'pa';
-                  const isMdPaOnly = isInde232Shift && isMdPaUser && !form.inde232;
-
                   const userNonDriverCap = getUserNonDriverCap(shift);
-                  const effectiveTotal = isMdPaOnly ? 2 : s.capDrivers + userNonDriverCap;
-                  const filled = isMdPaOnly ? Math.min(s.drivers + s.nonDrivers, 2) : s.drivers + s.nonDrivers;
+                  const effectiveTotal = s.capDrivers + userNonDriverCap;
+                  const filled = s.drivers + s.nonDrivers;
 
                   return (
                     <div key={i} className="rounded px-2 py-2 hover:bg-gray-50">
@@ -576,22 +532,21 @@ export default function VolunteerSignUp() {
                           type="checkbox" checked={form.shifts.includes(i)}
                           onChange={() => handleShiftToggle(i)}
                           className="accent-cardinal mt-0.5"
+                          disabled={full && !form.shifts.includes(i)}
                         />
                         <div className="flex-1">
                           <div>
                             <span className="font-medium">{shift.date}</span> — {shift.site}
-                            {tag && (
+                            {full && <span className="ml-2 text-xs font-semibold text-red-600">FULL</span>}
+                            {tag && !full && (
                               <span className={`ml-2 text-xs font-semibold px-2 py-0.5 rounded-full ${tag.color}`}>{tag.text}</span>
                             )}
                           </div>
                           <div className="text-xs text-gray-500">{formatShiftDetails(shift)}</div>
                           <div className="text-xs text-gray-400 mt-1">
                             Spots: {filled}/{effectiveTotal} filled
-                            {isMdPaOnly && (
-                              <span className="text-purple-600 font-semibold"> (2 MD/PA spots released — INDE 232 / OBGYN 133 priority)</span>
-                            )}
-                            {!isMdPaOnly && userNonDriverCap < s.effectiveNonDriverCap && (
-                              <span className="text-purple-600 font-semibold"> (1 spot reserved for MD/PA)</span>
+                            {userNonDriverCap < s.effectiveNonDriverCap && (
+                              <span className="text-purple-600 font-semibold"> ({s.effectiveNonDriverCap - userNonDriverCap} spot{s.effectiveNonDriverCap - userNonDriverCap !== 1 ? 's' : ''} reserved for MD/PA)</span>
                             )}
                           </div>
                           {(hasPeople || (s.clinicians && s.clinicians.length > 0)) && (
