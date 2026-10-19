@@ -257,7 +257,7 @@ export default function VolunteerSignUp() {
     const s = getShiftStatus(shift);
     const cap = getUserNonDriverCap(shift);
     const normallyFull = form.canDrive
-      ? s.drivers >= s.capDrivers
+      ? s.drivers >= s.capDrivers && s.nonDrivers >= cap
       : s.nonDrivers >= cap;
     if (normallyFull && form.languages.includes('mandarin') && shift.site === MANDARIN_ONLY_SITE && !(s.mandarinCount > 0)) {
       return false;

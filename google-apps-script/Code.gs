@@ -84,49 +84,11 @@ function doPost(e) {
   }
 
   if (data.type === 'remove-volunteer') {
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Student Volunteers');
-    if (!sheet) {
-      return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Sheet not found' }))
-        .setMimeType(ContentService.MimeType.JSON);
-    }
-    var rows = sheet.getDataRange().getValues();
-    var targetName = String(data.name || '').trim();
-    var targetDate = String(data.shiftDate || '').trim();
-    var targetSite = String(data.shiftSite || '').trim();
-    var removedCount = 0;
+    return removeSignup_('Student Volunteers', 7, 'Volunteer Reminders', data, 'Volunteer not found for that shift');
+  }
 
-    for (var i = rows.length - 1; i >= 1; i--) {
-      var rowName = String(rows[i][1] || '').trim();
-      var shiftsCell = String(rows[i][7] || '');
-      if (rowName !== targetName) continue;
-
-      var shiftLines = shiftsCell.split('\n');
-      var remaining = [];
-      var found = false;
-      for (var k = 0; k < shiftLines.length; k++) {
-        var line = shiftLines[k].trim();
-        if (!found && line.indexOf(targetDate) !== -1 && line.indexOf(targetSite) !== -1) {
-          found = true;
-        } else {
-          remaining.push(shiftLines[k]);
-        }
-      }
-      if (found) {
-        if (remaining.length === 0 || (remaining.length === 1 && remaining[0].trim() === '')) {
-          sheet.deleteRow(i + 1);
-        } else {
-          sheet.getRange(i + 1, 8).setValue(remaining.join('\n'));
-        }
-        removedCount++;
-      }
-    }
-
-    if (removedCount > 0) {
-      return ContentService.createTextOutput(JSON.stringify({ status: 'ok', removed: removedCount }))
-        .setMimeType(ContentService.MimeType.JSON);
-    }
-    return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Volunteer not found for that shift' }))
-      .setMimeType(ContentService.MimeType.JSON);
+  if (data.type === 'remove-clinician') {
+    return removeSignup_('Clinician Signups', 6, 'Clinician Reminders', data, 'Clinician not found for that shift');
   }
 
   if (data.type === 'student-volunteer') {
@@ -378,6 +340,69 @@ function doGet(e) {
 }
 
 // --- Shared helpers ---
+
+// Removes one shift from a person's sign-up row (deleting the row if it was their only shift)
+// and clears the matching row in the reminders sheet so they stop getting reminder emails.
+function removeSignup_(signupSheetName, shiftsColIndex, reminderSheetName, data, notFoundMessage) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(signupSheetName);
+  if (!sheet) {
+    return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Sheet not found' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  var rows = sheet.getDataRange().getValues();
+  var targetName = String(data.name || '').trim();
+  var targetDate = String(data.shiftDate || '').trim();
+  var targetSite = String(data.shiftSite || '').trim();
+  var removedCount = 0;
+
+  for (var i = rows.length - 1; i >= 1; i--) {
+    var rowName = String(rows[i][1] || '').trim();
+    var shiftsCell = String(rows[i][shiftsColIndex] || '');
+    if (rowName !== targetName) continue;
+
+    var shiftLines = shiftsCell.split('\n');
+    var remaining = [];
+    var found = false;
+    for (var k = 0; k < shiftLines.length; k++) {
+      var line = shiftLines[k].trim();
+      if (!found && line.indexOf(targetDate) !== -1 && line.indexOf(targetSite) !== -1) {
+        found = true;
+      } else {
+        remaining.push(shiftLines[k]);
+      }
+    }
+    if (found) {
+      if (remaining.length === 0 || (remaining.length === 1 && remaining[0].trim() === '')) {
+        sheet.deleteRow(i + 1);
+      } else {
+        sheet.getRange(i + 1, shiftsColIndex + 1).setValue(remaining.join('\n'));
+      }
+      removedCount++;
+    }
+  }
+
+  if (removedCount > 0) {
+    removeReminderRows_(reminderSheetName, targetName, targetDate, targetSite);
+    return ContentService.createTextOutput(JSON.stringify({ status: 'ok', removed: removedCount }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: notFoundMessage }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// Reminder sheet columns: Email, Name, ShiftText, ShiftDate, 7daySent, 3daySent, 1daySent
+function removeReminderRows_(reminderSheetName, targetName, targetDate, targetSite) {
+  var reminderSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(reminderSheetName);
+  if (!reminderSheet) return;
+  var rows = reminderSheet.getDataRange().getValues();
+  for (var i = rows.length - 1; i >= 1; i--) {
+    var rowName = String(rows[i][1] || '').trim();
+    var shiftText = String(rows[i][2] || '');
+    if (rowName === targetName && shiftText.indexOf(targetDate) !== -1 && shiftText.indexOf(targetSite) !== -1) {
+      reminderSheet.deleteRow(i + 1);
+    }
+  }
+}
 
 function scheduleReminders_(sheetName, email, name, shifts) {
   var reminderSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
@@ -638,6 +663,10 @@ function sendReminders_(sheetName, type) {
           + '- Sharps disposal box\n'
           + '- Gloves\n\n'
           + 'If you find yourself in need of anything else, just send me an email ssao@stanford.edu and I\'m happy to order it to keep in our supplies for next time.\n\n'
+          + 'PRESCRIBING MEDICATIONS\n'
+          + 'If you feel comfortable prescribing medication for hypertension and diabetes, you can do so on your prescription pad. '
+          + 'We are able to help patients pick up medications from the free Better Health Pharmacy in San Jose (no insurance needed): '
+          + 'https://publichealth.santaclaracounty.gov/programs-and-services/pharmacy-and-vaccination-services/better-health-pharmacy\n\n'
           + 'We look forward to seeing you. If you have any last-minute questions, reply here or text Saumya at 407-590-7065.\n\n'
           + 'Thank you!\nSMOP Team';
       } else {
@@ -768,32 +797,28 @@ function validateVolunteerCapacity_(sheet, data) {
     var cap = SITE_CAPACITY[site] || { drivers: 3, nonDrivers: 4 };
     var c = counts[key] || { drivers: 0, nonDrivers: 0, mdPaCount: 0, mandarinCount: 0 };
 
-    if (canDrive) {
-      if (c.drivers >= cap.drivers) {
-        return 'Driver spots are full for ' + line;
-      }
+    var effectiveNonDriverCap = cap.driverRatio ? Math.min(cap.nonDrivers, c.drivers * cap.driverRatio) : cap.nonDrivers;
+
+    // Reserve 2 spots for MD/PA students on every shift
+    var userNonDriverCap = effectiveNonDriverCap;
+    if (!isMdPa) {
+      var reserved = Math.max(0, 2 - (c.mdPaCount || 0));
+      userNonDriverCap = Math.max(0, effectiveNonDriverCap - reserved);
+    }
+
+    var assignedAsDriver = false;
+    if (canDrive && c.drivers < cap.drivers) {
+      assignedAsDriver = true;
+    } else if (c.nonDrivers < userNonDriverCap) {
+      assignedAsDriver = false;
+    } else if (speaksMandarin && site === MANDARIN_ONLY_SITE && c.mandarinCount === 0) {
+      assignedAsDriver = false;
     } else {
-      var effectiveNonDriverCap = cap.driverRatio ? Math.min(cap.nonDrivers, c.drivers * cap.driverRatio) : cap.nonDrivers;
-
-      // Reserve 2 spots for MD/PA students on every shift
-      var userNonDriverCap = effectiveNonDriverCap;
-      if (!isMdPa) {
-        var reserved = Math.max(0, 2 - (c.mdPaCount || 0));
-        userNonDriverCap = Math.max(0, effectiveNonDriverCap - reserved);
-      }
-
-      if (c.nonDrivers >= userNonDriverCap) {
-        // Mandarin override at Hope's Corner
-        if (speaksMandarin && site === MANDARIN_ONLY_SITE && c.mandarinCount === 0) {
-          // Allow — Mandarin speaker override
-        } else {
-          return 'Non-driver spots are full for ' + line;
-        }
-      }
+      return 'All spots are full for ' + line;
     }
 
     // Update counts for subsequent shift checks in the same submission
-    if (canDrive) {
+    if (assignedAsDriver) {
       if (!counts[key]) counts[key] = { drivers: 0, nonDrivers: 0, mdPaCount: 0, mandarinCount: 0 };
       counts[key].drivers++;
     } else {
