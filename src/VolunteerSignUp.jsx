@@ -37,7 +37,7 @@ const allShifts = [
   { date: 'Wednesday, October 14', startDateTime: '2026-10-14T09:30:00', time: '9:30 am – 12:30 pm', site: 'Peninsula Healthcare Connections', address: 'The Opportunity Center, 33 Encina Ave, Palo Alto, CA 94301' },
   { date: 'Saturday, October 17', startDateTime: '2026-10-17T07:30:00', time: '7:30 – 10:45 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
   { date: 'Sunday, October 18', startDateTime: '2026-10-18T09:40:00', time: '9:40 am – 1:15 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
-  { date: 'Wednesday, October 21', startDateTime: '2026-10-21T09:30:00', time: '9:30 am – 12:30 pm', site: 'Peninsula Healthcare Connections', address: 'The Opportunity Center, 33 Encina Ave, Palo Alto, CA 94301' },
+  { date: 'Wednesday, October 28', startDateTime: '2026-10-28T09:30:00', time: '9:30 am – 12:30 pm', site: 'Peninsula Healthcare Connections', address: 'The Opportunity Center, 33 Encina Ave, Palo Alto, CA 94301' },
   { date: 'Sunday, October 25', startDateTime: '2026-10-25T11:30:00', time: '11:30 am – 2:00 pm', site: 'Family Community Church Fall Fest', address: '478 Piercy Road, San Jose, CA 95138' },
   { date: 'Saturday, October 31', startDateTime: '2026-10-31T07:30:00', time: '7:30 – 10:45 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
   { date: 'Saturday, October 31', startDateTime: '2026-10-31T10:45:00', time: '10:45 am – 1:30 pm', site: 'Helping Hands at Sunnyvale Public Library', address: '665 W Olive Ave, Sunnyvale, CA 94086' },
