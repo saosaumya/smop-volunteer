@@ -3,6 +3,102 @@ import { HiCheckCircle, HiExclamationCircle, HiInformationCircle } from 'react-i
 
 const SCRIPT_URL = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
 
+const PRE_ASSESSMENT_QUESTIONS = [
+  { id: 'pre_confidence', label: 'How confident do you feel in your ability to interact with patients in a clinical outreach setting?', type: 'scale' },
+];
+
+const POST_ASSESSMENT_QUESTIONS = [
+  { id: 'post_confidence', label: 'After this shift, how confident do you feel in your ability to interact with patients in a clinical outreach setting?', type: 'scale' },
+];
+
+function PostAssessment() {
+  const params = new URLSearchParams(window.location.search);
+  const email = params.get('email') || '';
+  const shift = params.get('shift') || '';
+  const name = params.get('name') || '';
+  const [answers, setAnswers] = useState({});
+  const [status, setStatus] = useState('idle');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus('submitting');
+    try {
+      const res = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ type: 'post-assessment', email, name, shift, answers }),
+      });
+      const result = await res.json();
+      if (result.status === 'ok') setStatus('success');
+      else setStatus('error');
+    } catch { setStatus('error'); }
+  };
+
+  if (status === 'success') {
+    return (
+      <div className="bg-gray-50 min-h-screen">
+        <div className="bg-gradient-to-br from-cardinal to-cardinal-dark text-white py-12">
+          <div className="max-w-2xl mx-auto px-4">
+            <h1 className="text-3xl font-bold mb-2">Stanford Medicine Outreach Program</h1>
+            <p className="text-white/80">Post-Shift Assessment</p>
+          </div>
+        </div>
+        <div className="max-w-2xl mx-auto px-4 py-8">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
+            <HiCheckCircle className="mx-auto text-green-600 mb-3" size={48} />
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">Thank you!</h2>
+            <p className="text-gray-600 text-sm">Your post-shift assessment has been submitted. We appreciate your feedback!</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-gray-50 min-h-screen">
+      <div className="bg-gradient-to-br from-cardinal to-cardinal-dark text-white py-12">
+        <div className="max-w-2xl mx-auto px-4">
+          <h1 className="text-3xl font-bold mb-2">Stanford Medicine Outreach Program</h1>
+          <p className="text-white/80">Post-Shift Assessment</p>
+        </div>
+      </div>
+      <div className="max-w-2xl mx-auto px-4 py-8">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-5">
+            <h2 className="text-lg font-semibold text-gray-800">How was your shift?</h2>
+            <p className="text-sm text-gray-500">{shift}</p>
+            {POST_ASSESSMENT_QUESTIONS.map(q => (
+              <div key={q.id}>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{q.label}</label>
+                {q.type === 'scale' && (
+                  <div className="flex gap-2">
+                    {[1,2,3,4,5].map(n => (
+                      <button key={n} type="button"
+                        onClick={() => setAnswers(a => ({ ...a, [q.id]: n }))}
+                        className={`w-10 h-10 rounded-lg border text-sm font-medium transition-colors ${answers[q.id] === n ? 'bg-cardinal text-white border-cardinal' : 'border-gray-200 text-gray-600 hover:border-cardinal/50'}`}
+                      >{n}</button>
+                    ))}
+                  </div>
+                )}
+                {q.type === 'text' && (
+                  <textarea value={answers[q.id] || ''} onChange={e => setAnswers(a => ({ ...a, [q.id]: e.target.value }))}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cardinal/30 focus:border-cardinal" rows={3} />
+                )}
+              </div>
+            ))}
+            <p className="text-xs text-gray-400">1 = Not confident at all, 5 = Very confident</p>
+          </div>
+          <button type="submit" disabled={status === 'submitting' || Object.keys(answers).length === 0}
+            className="w-full bg-cardinal hover:bg-cardinal-dark text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-50">
+            {status === 'submitting' ? 'Submitting...' : 'Submit Assessment'}
+          </button>
+          {status === 'error' && <p className="text-red-600 text-sm text-center">Something went wrong. Please try again.</p>}
+        </form>
+      </div>
+    </div>
+  );
+}
+
 const STUDENT_TYPE_LABELS = { md: 'MD Student', pa: 'PA Student', undergrad: 'Undergrad', grad: 'Grad Student', other: 'Other' };
 
 const allShifts = [
@@ -136,6 +232,9 @@ function saveInfo(form) {
 }
 
 export default function VolunteerSignUp() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('view') === 'post-assessment') return <PostAssessment />;
+
   const [form, setForm] = useState(() => {
     const defaults = {
       name: '',
@@ -149,13 +248,15 @@ export default function VolunteerSignUp() {
       isEventLead: false,
       shifts: [],
       notes: '',
+      preAssessment: {},
     };
     const saved = loadSavedInfo();
-    return saved ? { ...defaults, ...saved, shifts: [], notes: '' } : defaults;
+    return saved ? { ...defaults, ...saved, shifts: [], notes: '', preAssessment: {} } : defaults;
   });
   const [status, setStatus] = useState('idle');
   const [capacityError, setCapacityError] = useState('');
   const [shiftData, setShiftData] = useState({});
+  const [isFirstTime, setIsFirstTime] = useState(null);
 
   useEffect(() => {
     if (!SCRIPT_URL) return;
@@ -304,6 +405,7 @@ export default function VolunteerSignUp() {
           shifts: shiftsFormatted,
           shiftsStructured: shiftsStructured,
           notes: form.notes,
+          preAssessment: isFirstTime ? form.preAssessment : undefined,
         }),
       });
       const result = await res.json();
@@ -354,9 +456,6 @@ export default function VolunteerSignUp() {
             <p className="text-gray-600 text-sm mb-4">
               Need to cancel a shift? Email SMOP volunteer coordinator <a href="mailto:lauratjy@stanford.edu" className="text-cardinal hover:underline">lauratjy@stanford.edu</a>.
             </p>
-            <p className="text-gray-500 text-xs">
-              Questions? Email <a href="mailto:stanford.h.outreach@gmail.com" className="text-cardinal hover:underline">stanford.h.outreach@gmail.com</a>
-            </p>
             <button
               onClick={() => { setStatus('idle'); setForm({ name: '', email: '', phone: '', studentType: '', smopFellow: false, languages: [], canDrive: false, hasBadgeAccess: false, isEventLead: false, shifts: [], notes: '' }); }}
               className="mt-6 text-sm text-cardinal font-semibold hover:underline"
@@ -382,6 +481,13 @@ export default function VolunteerSignUp() {
                   <input
                     type="email" required value={form.email}
                     onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                    onBlur={() => {
+                      if (!form.email || !SCRIPT_URL) return;
+                      fetch(`${SCRIPT_URL}?type=check-email&email=${encodeURIComponent(form.email)}`)
+                        .then(r => r.json())
+                        .then(d => setIsFirstTime(!d.exists))
+                        .catch(() => setIsFirstTime(null));
+                    }}
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cardinal/30 focus:border-cardinal"
                   />
                 </div>
@@ -501,6 +607,35 @@ export default function VolunteerSignUp() {
                 <p className="text-sm text-blue-800">
                   Non-MD/PA students are limited to 8 shifts per quarter to ensure fair access for all volunteers.
                 </p>
+              </div>
+            )}
+
+            {isFirstTime === true && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-5">
+                <h2 className="text-lg font-semibold text-gray-800">Pre-Volunteer Assessment</h2>
+                <p className="text-xs text-gray-500">Since this is your first time volunteering with SMOP, please answer the following.</p>
+                {PRE_ASSESSMENT_QUESTIONS.map(q => (
+                  <div key={q.id}>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{q.label}</label>
+                    {q.type === 'scale' && (
+                      <div>
+                        <div className="flex gap-2">
+                          {[1,2,3,4,5].map(n => (
+                            <button key={n} type="button"
+                              onClick={() => setForm(f => ({ ...f, preAssessment: { ...f.preAssessment, [q.id]: n } }))}
+                              className={`w-10 h-10 rounded-lg border text-sm font-medium transition-colors ${form.preAssessment[q.id] === n ? 'bg-cardinal text-white border-cardinal' : 'border-gray-200 text-gray-600 hover:border-cardinal/50'}`}
+                            >{n}</button>
+                          ))}
+                        </div>
+                        <p className="text-xs text-gray-400 mt-1">1 = Not confident at all, 5 = Very confident</p>
+                      </div>
+                    )}
+                    {q.type === 'text' && (
+                      <textarea value={form.preAssessment[q.id] || ''} onChange={e => setForm(f => ({ ...f, preAssessment: { ...f.preAssessment, [q.id]: e.target.value } }))}
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cardinal/30 focus:border-cardinal" rows={3} />
+                    )}
+                  </div>
+                ))}
               </div>
             )}
 
@@ -748,7 +883,7 @@ export default function VolunteerSignUp() {
             {status === 'error' && (
               <div className="flex items-center gap-2 text-red-600 bg-red-50 px-4 py-3 rounded-lg text-sm">
                 <HiExclamationCircle size={18} />
-                Something went wrong. Please try again or email stanford.h.outreach@gmail.com.
+                Something went wrong. Please try again or email lauratjy@stanford.edu.
               </div>
             )}
 
