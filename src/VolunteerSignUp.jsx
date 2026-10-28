@@ -241,6 +241,7 @@ export default function VolunteerSignUp() {
       email: '',
       phone: '',
       studentType: '',
+      affiliation: '',
       smopFellow: false,
       languages: [],
       canDrive: false,
@@ -397,6 +398,7 @@ export default function VolunteerSignUp() {
           email: form.email,
           phone: form.phone,
           studentType: form.studentType,
+          affiliation: form.affiliation,
           smopFellow: form.smopFellow,
           languages: form.languages,
           canDrive: form.canDrive,
@@ -435,7 +437,7 @@ export default function VolunteerSignUp() {
       <div className="max-w-2xl mx-auto px-4 mt-4">
         <div className="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4 text-center">
           <p className="text-yellow-900 font-bold text-lg">Sign-ups close the Thursday before the event at noon!</p>
-          <p className="text-yellow-800 text-sm mt-1">Please do not sign up later than that, as our volunteer coordinator sends out volunteer info on Thursday afternoons/evenings and it is a lot of added work for our coordinator to get you caught up to speed if you are added later.</p>
+          <p className="text-yellow-800 text-sm mt-1">Please do not sign up later than that, as our Clinical Outreach Committee Chair sends out volunteer info on Thursday afternoons/evenings and it is a lot of added work for our coordinator to get you caught up to speed if you are added later.</p>
         </div>
       </div>
 
@@ -454,10 +456,10 @@ export default function VolunteerSignUp() {
               A coordinator will also be in touch before the event with details about transportation from LKSC and what to bring.
             </p>
             <p className="text-gray-600 text-sm mb-4">
-              Need to cancel a shift? Email SMOP volunteer coordinator <a href="mailto:lauratjy@stanford.edu" className="text-cardinal hover:underline">lauratjy@stanford.edu</a>.
+              Need to cancel a shift? Email SMOP Clinical Outreach Committee Chair <a href="mailto:yanethp@stanford.edu" className="text-cardinal hover:underline">yanethp@stanford.edu</a>.
             </p>
             <button
-              onClick={() => { setStatus('idle'); setForm({ name: '', email: '', phone: '', studentType: '', smopFellow: false, languages: [], canDrive: false, hasBadgeAccess: false, isEventLead: false, shifts: [], notes: '' }); }}
+              onClick={() => { setStatus('idle'); setForm({ name: '', email: '', phone: '', studentType: '', affiliation: '', smopFellow: false, languages: [], canDrive: false, hasBadgeAccess: false, isEventLead: false, shifts: [], notes: '' }); }}
               className="mt-6 text-sm text-cardinal font-semibold hover:underline"
             >
               Sign up for more shifts
@@ -514,6 +516,17 @@ export default function VolunteerSignUp() {
                     <option value="other">Other</option>
                   </select>
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Degree Program / Affiliation *</label>
+                <p className="text-xs text-gray-500 mb-1">Stanford ASSU provides us with some funding and they would like us to ask which degree programs and affiliations our volunteers are in. Undergraduate students, please provide your major and year. Graduate students, please share what degree you are pursuing and what school you attend. Others, please specify your affiliation.</p>
+                <input
+                  type="text" required value={form.affiliation}
+                  onChange={e => setForm(f => ({ ...f, affiliation: e.target.value }))}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cardinal/30 focus:border-cardinal"
+                  placeholder="e.g. MS1, PA-2, Biology Junior, MPH candidate at SPH..."
+                />
               </div>
 
               <div>
@@ -835,11 +848,11 @@ export default function VolunteerSignUp() {
                             "WeHOPE Berryessa Safe RV Parking": `Drivers, the location to drive to is WeHOPE Berryessa Safe RV Parking: 1300 Berryessa Rd, San Jose, CA 95133`,
                           };
                           const driverInfo = driverInstructions[shift.site] || `Drivers, the location to drive to is ${shift.address}.`;
-                          const script = `Hey everyone! I'm Laura, volunteer coordinator of SMOP. I won't be at the volunteer outreach event this ${eventDay}, but the event lead is ${eventLeadName} (${eventLeadPhone}) in this group chat. Thanks so much for volunteering with us!\n\n${driverNames} please park in the handicap spots closest to LK so we can load the cars with supplies - put your hazards on to prevent getting a ticket. Once we load up the cars and volunteers:\n\n${driverInfo}\n\n${badgeNames} - you have signed up for badge access to LKSC. Please make sure you bring your badge so that we have access to our supplies. If you cancel your shift, please make sure the volunteer coordinator is aware because we cannot access supplies without a badge.\n\nAll, please arrive at LK by ${meetTime}. We will load up cars from LK.\n\nDress code: Stanford Med or Stanford shirt (SMOP Shirt if you have one); casual but appropriate pants; closed-toed shoes.\n\nTo do on the car-ride there:\n\n1. Please review this Google Form that must be filled out for EVERY client we serve– this information must be reported to the Santa Clara Health Department and other funders to continue receiving donations. Not filling out this form for all clients really hurts our program.\nhttps://docs.google.com/forms/d/e/1FAIpQLSdYhnQ-mjQflrueQGOLF82aiJUQ6H8Gz3Mxuv0zZD4c-dI71w/viewform?usp=dialog\n\n2. Watch the below trainings (on x2 speed)\nhttps://drive.google.com/file/d/1bUnQ-kZso7s_hqsehG9G7k5m5pWyiLaX/view?usp=sharing\nhttps://drive.google.com/file/d/1Dfl8FcfNY7rQzZLzLYvsiEBHvlaJx_Gg/view?usp=sharing\n\nWhen you arrive: Text when you arrive! If you have badge access, head up to 4th floor and retrieve supplies for respective location. If you don't, go to LK outside stairs until someone lets you in.\n\nFailure to alert us of cancellations by the end of today will result in being unable to volunteer for the remainder of the quarter.\n\nAny special notes for today: \n\nPlease be sure to take the laminated "Where to get help" sheets that are hanging by our supplies on the fourth floor.`;
+                          const script = `Hey everyone! I'm Yaneth, Clinical Outreach Committee Chair of SMOP. I won't be at the volunteer outreach event this ${eventDay}, but the event lead is ${eventLeadName} (${eventLeadPhone}) in this group chat. Thanks so much for volunteering with us!\n\n${driverNames} please park in the handicap spots closest to LK so we can load the cars with supplies - put your hazards on to prevent getting a ticket. Once we load up the cars and volunteers:\n\n${driverInfo}\n\n${badgeNames} - you have signed up for badge access to LKSC. Please make sure you bring your badge so that we have access to our supplies. If you cancel your shift, please make sure the Clinical Outreach Committee Chair is aware because we cannot access supplies without a badge.\n\nAll, please arrive at LK by ${meetTime}. We will load up cars from LK.\n\nDress code: Stanford Med or Stanford shirt (SMOP Shirt if you have one); casual but appropriate pants; closed-toed shoes.\n\nTo do on the car-ride there:\n\n1. Please review this Google Form that must be filled out for EVERY client we serve– this information must be reported to the Santa Clara Health Department and other funders to continue receiving donations. Not filling out this form for all clients really hurts our program.\nhttps://docs.google.com/forms/d/e/1FAIpQLSdYhnQ-mjQflrueQGOLF82aiJUQ6H8Gz3Mxuv0zZD4c-dI71w/viewform?usp=dialog\n\n2. Watch the below trainings (on x2 speed)\nhttps://drive.google.com/file/d/1bUnQ-kZso7s_hqsehG9G7k5m5pWyiLaX/view?usp=sharing\nhttps://drive.google.com/file/d/1Dfl8FcfNY7rQzZLzLYvsiEBHvlaJx_Gg/view?usp=sharing\n\nWhen you arrive: Text when you arrive! If you have badge access, head up to 4th floor and retrieve supplies for respective location. If you don't, go to LK outside stairs until someone lets you in.\n\nFailure to alert us of cancellations by the end of today will result in being unable to volunteer for the remainder of the quarter.\n\nAny special notes for today: \n\nPlease be sure to take the laminated "Where to get help" sheets that are hanging by our supplies on the fourth floor.`;
                           return (
                             <div className="mt-2 border-t border-gray-100 pt-2">
                               <div className="flex items-center justify-between mb-1">
-                                <span className="text-xs font-medium text-gray-600">Volunteer Coordinator Script</span>
+                                <span className="text-xs font-medium text-gray-600">Clinical Outreach Committee Chair Script</span>
                                 <button
                                   type="button"
                                   onClick={() => { navigator.clipboard.writeText(script); }}
@@ -883,7 +896,7 @@ export default function VolunteerSignUp() {
             {status === 'error' && (
               <div className="flex items-center gap-2 text-red-600 bg-red-50 px-4 py-3 rounded-lg text-sm">
                 <HiExclamationCircle size={18} />
-                Something went wrong. Please try again or email lauratjy@stanford.edu.
+                Something went wrong. Please try again or email yanethp@stanford.edu.
               </div>
             )}
 

@@ -83,8 +83,19 @@ function doPost(e) {
       .setMimeType(ContentService.MimeType.JSON);
   }
 
+  if (data.type === 'post-assessment') {
+    var postSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Post Assessments');
+    if (!postSheet) {
+      postSheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet('Post Assessments');
+      postSheet.appendRow(['Timestamp', 'Name', 'Email', 'Shift', 'Answers']);
+    }
+    postSheet.appendRow([new Date(), data.name || '', data.email || '', data.shift || '', JSON.stringify(data.answers || {})]);
+    return ContentService.createTextOutput(JSON.stringify({ status: 'ok' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
   if (data.type === 'remove-volunteer') {
-    return removeSignup_('Student Volunteers', 7, 'Volunteer Reminders', data, 'Volunteer not found for that shift');
+    return removeSignup_('Student Volunteers', 8, 'Volunteer Reminders', data, 'Volunteer not found for that shift');
   }
 
   if (data.type === 'remove-clinician') {
@@ -95,7 +106,7 @@ function doPost(e) {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Student Volunteers');
     if (!sheet) {
       sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet('Student Volunteers');
-      sheet.appendRow(['Timestamp', 'Name', 'Email', 'Phone', 'StudentType', 'SmopFellow', 'Languages', 'Shifts', 'Notes', 'CanDrive', 'HasBadgeAccess', 'IsEventLead']);
+      sheet.appendRow(['Timestamp', 'Name', 'Email', 'Phone', 'StudentType', 'Affiliation', 'SmopFellow', 'Languages', 'Shifts', 'Notes', 'CanDrive', 'HasBadgeAccess', 'IsEventLead']);
     }
 
     var shifts = Array.isArray(data.shifts) ? data.shifts.join('\n') : String(data.shifts);
@@ -114,6 +125,7 @@ function doPost(e) {
       data.email,
       data.phone || '',
       data.studentType || '',
+      data.affiliation || '',
       data.smopFellow || false,
       languages,
       shifts,
@@ -122,6 +134,16 @@ function doPost(e) {
       data.hasBadgeAccess || false,
       data.isEventLead || false
     ]);
+
+    // Store pre-assessment if present (first-time volunteer)
+    if (data.preAssessment && typeof data.preAssessment === 'object' && Object.keys(data.preAssessment).length > 0) {
+      var preSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Pre Assessments');
+      if (!preSheet) {
+        preSheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet('Pre Assessments');
+        preSheet.appendRow(['Timestamp', 'Name', 'Email', 'Answers']);
+      }
+      preSheet.appendRow([new Date(), data.name, data.email, JSON.stringify(data.preAssessment)]);
+    }
 
     // Build calendar invite from structured shift data if available, else from text
     var icsShifts = shifts;
@@ -142,7 +164,7 @@ function doPost(e) {
           + 'A calendar invite has been sent separately and should appear on your calendar automatically.\n'
           + 'You will receive reminder emails at 1 week, 3 days, and 1 day before each shift.\n\n'
           + 'A coordinator will be in touch before the event with details about transportation from LKSC and what to bring.\n\n'
-          + 'If you have any questions, email our volunteer coordinator, Laura, at lauratjy@stanford.edu.\n\n'
+          + 'If you have any questions, email our Clinical Outreach Committee Chair, Yaneth, at yanethp@stanford.edu.\n\n'
           + 'Thank you!\nSMOP Team',
         name: 'SMOP Volunteer Coordination'
       });
@@ -233,14 +255,14 @@ function doGet(e) {
     if (sheet) {
       var data = sheet.getDataRange().getValues();
       for (var i = 1; i < data.length; i++) {
-        var shiftsCell = data[i][7];
-        var canDrive = data[i][9];
-        var hasBadge = data[i][10];
-        var isLead = data[i][11];
+        var shiftsCell = data[i][8];
+        var canDrive = data[i][10];
+        var hasBadge = data[i][11];
+        var isLead = data[i][12];
         var name = data[i][1];
         var email = data[i][2] || '';
         var phone = data[i][3] || '';
-        var languages = String(data[i][6] || '').toLowerCase();
+        var languages = String(data[i][7] || '').toLowerCase();
         if (!shiftsCell) continue;
         var shiftLines = String(shiftsCell).split('\n');
         shiftLines.forEach(function(line) {
@@ -252,7 +274,7 @@ function doGet(e) {
             var key = dateMatch[1] + '|' + siteMatch[1];
             if (!result[key]) result[key] = { drivers: 0, nonDrivers: 0, eventLead: '', driverList: [], nonDriverList: [], badgeHolders: [], clinicians: [], mandarinCount: 0, mdPaCount: 0 };
             var studentType = String(data[i][4] || '').toLowerCase();
-            var person = { name: name, email: String(email), phone: String(phone), studentType: studentType, languages: String(data[i][6] || '') };
+            var person = { name: name, email: String(email), phone: String(phone), studentType: studentType, languages: String(data[i][7] || '') };
             if (studentType === 'md' || studentType === 'pa') {
               result[key].mdPaCount++;
             }
@@ -333,6 +355,23 @@ function doGet(e) {
       totalHours: totalHours,
       totalPatients: totalPatients
     })).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  if (params.type === 'check-email') {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Student Volunteers');
+    var exists = false;
+    if (sheet && params.email) {
+      var data = sheet.getDataRange().getValues();
+      var target = params.email.toLowerCase().trim();
+      for (var i = 1; i < data.length; i++) {
+        if (String(data[i][2]).toLowerCase().trim() === target) {
+          exists = true;
+          break;
+        }
+      }
+    }
+    return ContentService.createTextOutput(JSON.stringify({ exists: exists }))
+      .setMimeType(ContentService.MimeType.JSON);
   }
 
   return ContentService.createTextOutput(JSON.stringify({ error: 'Unknown request' }))
@@ -673,7 +712,7 @@ function sendReminders_(sheetName, type) {
         reminderBody = 'Hi ' + name + ',\n\n'
           + 'Your SMOP volunteer shift is TOMORROW!\n\n'
           + shiftText + '\n\n'
-          + 'We look forward to seeing you. If you have any last-minute questions, reply here or text Laura at (346) 242-4484.\n\n'
+          + 'We look forward to seeing you. If you have any last-minute questions, reply here or text Yaneth at (346) 242-4484.\n\n'
           + 'Thank you!\nSMOP Team';
       }
       colToMark = 7;
@@ -690,7 +729,7 @@ function sendReminders_(sheetName, type) {
         if (isClinician) {
           emailOptions.cc = ccRecipients;
         } else {
-          emailOptions.replyTo = 'lauratjy@stanford.edu';
+          emailOptions.replyTo = 'yanethp@stanford.edu';
         }
         MailApp.sendEmail(emailOptions);
         sheet.getRange(i + 1, colToMark).setValue(true);
@@ -718,10 +757,10 @@ function validateVolunteerCapacity_(sheet, data) {
   var counts = {};
   var rows = sheet.getDataRange().getValues();
   for (var i = 1; i < rows.length; i++) {
-    var shiftsCell = rows[i][7];
-    var rowCanDrive = rows[i][9];
+    var shiftsCell = rows[i][8];
+    var rowCanDrive = rows[i][10];
     var rowStudentType = String(rows[i][4] || '').toLowerCase();
-    var rowLanguages = String(rows[i][6] || '').toLowerCase();
+    var rowLanguages = String(rows[i][7] || '').toLowerCase();
     if (!shiftsCell) continue;
     var lines = String(shiftsCell).split('\n');
     lines.forEach(function(line) {
@@ -832,12 +871,65 @@ function validateVolunteerCapacity_(sheet, data) {
   return null; // all shifts valid
 }
 
+function sendPostShiftEmails() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Volunteer Reminders');
+  if (!sheet) return;
+
+  var data = sheet.getDataRange().getValues();
+  var headers = data[0];
+  var postSentCol = headers.indexOf('PostSent');
+  if (postSentCol === -1) {
+    postSentCol = headers.length;
+    sheet.getRange(1, postSentCol + 1).setValue('PostSent');
+  }
+
+  var now = new Date();
+  var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var oneDay = 24 * 60 * 60 * 1000;
+  var siteUrl = 'https://smop-volunteer.vercel.app';
+
+  for (var i = 1; i < data.length; i++) {
+    var email = data[i][0];
+    var name = data[i][1];
+    var shiftText = data[i][2];
+    var shiftDate = new Date(data[i][3]);
+    var shiftDay = new Date(shiftDate.getFullYear(), shiftDate.getMonth(), shiftDate.getDate());
+    var postSent = data[i][postSentCol];
+
+    var daysSince = Math.round((today.getTime() - shiftDay.getTime()) / oneDay);
+
+    if (daysSince >= 1 && daysSince <= 3 && !postSent) {
+      var assessmentUrl = siteUrl + '?view=post-assessment'
+        + '&email=' + encodeURIComponent(email)
+        + '&name=' + encodeURIComponent(name)
+        + '&shift=' + encodeURIComponent(shiftText);
+
+      try {
+        MailApp.sendEmail({
+          to: email,
+          subject: 'SMOP Post-Shift Assessment',
+          body: 'Hi ' + name + ',\n\n'
+            + 'Thank you for volunteering with SMOP! We hope you had a great experience.\n\n'
+            + 'We would love to hear about your shift. Please take a moment to fill out this brief post-shift assessment:\n\n'
+            + assessmentUrl + '\n\n'
+            + 'Your feedback helps us understand how SMOP is impacting your growth as a future clinician.\n\n'
+            + 'Thank you!\nSMOP Team',
+          name: 'SMOP Volunteer Coordination',
+          replyTo: 'yanethp@stanford.edu'
+        });
+        sheet.getRange(i + 1, postSentCol + 1).setValue(true);
+      } catch (err) {
+        Logger.log('Post-shift email error for ' + email + ': ' + err.message);
+      }
+    }
+  }
+}
+
 function createReminderTriggers() {
-  // Remove existing triggers to avoid duplicates
   var triggers = ScriptApp.getProjectTriggers();
   triggers.forEach(function(trigger) {
     var fn = trigger.getHandlerFunction();
-    if (fn === 'sendClinicianReminders' || fn === 'sendVolunteerReminders') {
+    if (fn === 'sendClinicianReminders' || fn === 'sendVolunteerReminders' || fn === 'sendPostShiftEmails') {
       ScriptApp.deleteTrigger(trigger);
     }
   });
@@ -852,5 +944,11 @@ function createReminderTriggers() {
     .timeBased()
     .everyDays(1)
     .atHour(9)
+    .create();
+
+  ScriptApp.newTrigger('sendPostShiftEmails')
+    .timeBased()
+    .everyDays(1)
+    .atHour(20)
     .create();
 }
