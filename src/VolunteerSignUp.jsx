@@ -4,11 +4,19 @@ import { HiCheckCircle, HiExclamationCircle, HiInformationCircle } from 'react-i
 const SCRIPT_URL = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
 
 const PRE_ASSESSMENT_QUESTIONS = [
-  { id: 'pre_confidence', label: 'How confident do you feel in your ability to interact with patients in a clinical outreach setting?', type: 'scale' },
+  { id: 'pre_confident_interacting', label: 'I feel confident interacting with patients in an underserved clinical outreach setting.', type: 'scale' },
+  { id: 'pre_understand_barriers', label: 'I understand the barriers to healthcare that unhoused and underserved populations face.', type: 'scale' },
+  { id: 'pre_prepared_communicate', label: 'I feel prepared to communicate with patients from different cultural and socioeconomic backgrounds.', type: 'scale' },
+  { id: 'pre_career_underserved', label: 'I see myself working with underserved communities as part of my future clinical career.', type: 'scale' },
+  { id: 'pre_hope_to_gain', label: 'What do you hope to gain from volunteering with SMOP?', type: 'text' },
 ];
 
 const POST_ASSESSMENT_QUESTIONS = [
-  { id: 'post_confidence', label: 'After this shift, how confident do you feel in your ability to interact with patients in a clinical outreach setting?', type: 'scale' },
+  { id: 'post_confident_interacting', label: 'My experience volunteering with SMOP made me feel more confident interacting with patients in an underserved clinical outreach setting.', type: 'scale' },
+  { id: 'post_understand_barriers', label: 'My experience volunteering with SMOP showed me the barriers to healthcare that unhoused and underserved populations face.', type: 'scale' },
+  { id: 'post_prepared_communicate', label: 'My experience volunteering with SMOP made me feel more prepared to communicate with patients from different cultural and socioeconomic backgrounds.', type: 'scale' },
+  { id: 'post_career_underserved', label: 'My experience volunteering with SMOP showed me that I see myself working with underserved communities as part of my future clinical career.', type: 'scale' },
+  { id: 'post_learned', label: "What's one thing you learned or experienced today that you'll carry into your clinical training?", type: 'text' },
 ];
 
 function PostAssessment() {
@@ -86,7 +94,7 @@ function PostAssessment() {
                 )}
               </div>
             ))}
-            <p className="text-xs text-gray-400">1 = Not confident at all, 5 = Very confident</p>
+            <p className="text-xs text-gray-400">1 = Strongly disagree, 5 = Strongly agree</p>
           </div>
           <button type="submit" disabled={status === 'submitting' || Object.keys(answers).length === 0}
             className="w-full bg-cardinal hover:bg-cardinal-dark text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-50">
@@ -640,7 +648,7 @@ export default function VolunteerSignUp() {
                             >{n}</button>
                           ))}
                         </div>
-                        <p className="text-xs text-gray-400 mt-1">1 = Not confident at all, 5 = Very confident</p>
+                        <p className="text-xs text-gray-400 mt-1">1 = Strongly disagree, 5 = Strongly agree</p>
                       </div>
                     )}
                     {q.type === 'text' && (
@@ -848,7 +856,7 @@ export default function VolunteerSignUp() {
                             "WeHOPE Berryessa Safe RV Parking": `Drivers, the location to drive to is WeHOPE Berryessa Safe RV Parking: 1300 Berryessa Rd, San Jose, CA 95133`,
                           };
                           const driverInfo = driverInstructions[shift.site] || `Drivers, the location to drive to is ${shift.address}.`;
-                          const script = `Hey everyone! I'm Yaneth, Clinical Outreach Committee Chair of SMOP. I won't be at the volunteer outreach event this ${eventDay}, but the event lead is ${eventLeadName} (${eventLeadPhone}) in this group chat. Thanks so much for volunteering with us!\n\n${driverNames} please park in the handicap spots closest to LK so we can load the cars with supplies - put your hazards on to prevent getting a ticket. Once we load up the cars and volunteers:\n\n${driverInfo}\n\n${badgeNames} - you have signed up for badge access to LKSC. Please make sure you bring your badge so that we have access to our supplies. If you cancel your shift, please make sure the Clinical Outreach Committee Chair is aware because we cannot access supplies without a badge.\n\nAll, please arrive at LK by ${meetTime}. We will load up cars from LK.\n\nDress code: Stanford Med or Stanford shirt (SMOP Shirt if you have one); casual but appropriate pants; closed-toed shoes.\n\nTo do on the car-ride there:\n\n1. Please review this Google Form that must be filled out for EVERY client we serve– this information must be reported to the Santa Clara Health Department and other funders to continue receiving donations. Not filling out this form for all clients really hurts our program.\nhttps://docs.google.com/forms/d/e/1FAIpQLSdYhnQ-mjQflrueQGOLF82aiJUQ6H8Gz3Mxuv0zZD4c-dI71w/viewform?usp=dialog\n\n2. Watch the below trainings (on x2 speed)\nhttps://drive.google.com/file/d/1bUnQ-kZso7s_hqsehG9G7k5m5pWyiLaX/view?usp=sharing\nhttps://drive.google.com/file/d/1Dfl8FcfNY7rQzZLzLYvsiEBHvlaJx_Gg/view?usp=sharing\n\nWhen you arrive: Text when you arrive! If you have badge access, head up to 4th floor and retrieve supplies for respective location. If you don't, go to LK outside stairs until someone lets you in.\n\nFailure to alert us of cancellations by the end of today will result in being unable to volunteer for the remainder of the quarter.\n\nAny special notes for today: \n\nPlease be sure to take the laminated "Where to get help" sheets that are hanging by our supplies on the fourth floor.`;
+                          const script = `Hey everyone! I'm Yaneth, Clinical Outreach Committee Chair of SMOP. I won't be at the volunteer outreach event this ${eventDay}, but the event lead is ${eventLeadName} (${eventLeadPhone}) in this group chat. Thanks so much for volunteering with us!\n\n${driverNames} please park in the handicap spots closest to LK so we can load the cars with supplies - put your hazards on to prevent getting a ticket. Once we load up the cars and volunteers:\n\n${driverInfo}\n\n${badgeNames} - you have signed up for badge access to LKSC. Please make sure you bring your badge so that we have access to our supplies. If you cancel your shift, please make sure the Clinical Outreach Committee Chair is aware because we cannot access supplies without a badge.\n\nAll, please arrive at LK by ${meetTime}. We will load up cars from LK.\n\nDress code: Stanford Med or Stanford shirt (SMOP Shirt if you have one); casual but appropriate pants; closed-toed shoes.\n\nTo do on the car-ride there:\n\n1. Please review this Google Form that must be filled out for EVERY client we serve– this information must be reported to the Santa Clara Health Department and other funders to continue receiving donations. Not filling out this form for all clients really hurts our program.\nhttps://docs.google.com/forms/d/e/1FAIpQLSdYhnQ-mjQflrueQGOLF82aiJUQ6H8Gz3Mxuv0zZD4c-dI71w/viewform?usp=dialog\n\n2. Watch the below trainings (on x2 speed)\nHarm Reduction: https://drive.google.com/file/d/1SnJvIsUJ4phhDf90licbZtnNiSWswGbl/view?usp=sharing\nWorking with People Experiencing Homelessness / What You Might See at SMOP: https://drive.google.com/file/d/1AspbfAdSJXtCtYqUaYFkx9msArSrqM2I/view?usp=sharing\n\nWhen you arrive: Text when you arrive! If you have badge access, head up to 4th floor and retrieve supplies for respective location. If you don't, go to LK outside stairs until someone lets you in.\n\nFailure to alert us of cancellations by the end of today will result in being unable to volunteer for the remainder of the quarter.\n\nAny special notes for today: \n\nPlease be sure to take the laminated "Where to get help" sheets that are hanging by our supplies on the fourth floor.`;
                           return (
                             <div className="mt-2 border-t border-gray-100 pt-2">
                               <div className="flex items-center justify-between mb-1">
