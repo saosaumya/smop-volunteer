@@ -103,6 +103,15 @@ function doPost(e) {
   }
 
   if (data.type === 'student-volunteer') {
+    var lock = LockService.getScriptLock();
+    try {
+      lock.waitLock(30000);
+    } catch (err) {
+      return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Server busy, please try again in a moment.' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    try {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Student Volunteers');
     if (!sheet) {
       sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet('Student Volunteers');
@@ -112,9 +121,9 @@ function doPost(e) {
     var shifts = Array.isArray(data.shifts) ? data.shifts.join('\n') : String(data.shifts);
     var languages = Array.isArray(data.languages) ? data.languages.join(', ') : String(data.languages || '');
 
-    // --- Server-side capacity validation ---
     var capacityError = validateVolunteerCapacity_(sheet, data);
     if (capacityError) {
+      lock.releaseLock();
       return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: capacityError }))
         .setMimeType(ContentService.MimeType.JSON);
     }
@@ -134,6 +143,9 @@ function doPost(e) {
       data.hasBadgeAccess || false,
       data.isEventLead || false
     ]);
+    SpreadsheetApp.flush();
+
+    auditLog_('SIGNUP', data.email, data.name, shifts);
 
     // Store pre-assessment if present (first-time volunteer)
     if (data.preAssessment && typeof data.preAssessment === 'object' && Object.keys(data.preAssessment).length > 0) {
@@ -190,8 +202,16 @@ function doPost(e) {
     // Schedule reminders
     scheduleReminders_('Volunteer Reminders', data.email, data.name, data.shifts);
 
+    lock.releaseLock();
     return ContentService.createTextOutput(JSON.stringify({ status: 'ok' }))
       .setMimeType(ContentService.MimeType.JSON);
+    } catch (err) {
+      lock.releaseLock();
+      Logger.log('Student volunteer signup error: ' + err.message);
+      auditLog_('ERROR', data.email || '', data.name || '', err.message);
+      return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Something went wrong. Please try again.' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
   }
 
   // Hour logging (non-clinician)
@@ -421,6 +441,7 @@ function removeSignup_(signupSheetName, shiftsColIndex, reminderSheetName, data,
   }
 
   if (removedCount > 0) {
+    auditLog_('CANCEL', data.email || '', targetName, targetDate + ' — ' + targetSite);
     removeReminderRows_(reminderSheetName, targetName, targetDate, targetSite);
     return ContentService.createTextOutput(JSON.stringify({ status: 'ok', removed: removedCount }))
       .setMimeType(ContentService.MimeType.JSON);
@@ -951,4 +972,17 @@ function createReminderTriggers() {
     .everyDays(1)
     .atHour(20)
     .create();
+}
+
+function auditLog_(action, email, name, details) {
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Audit Log');
+    if (!sheet) {
+      sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet('Audit Log');
+      sheet.appendRow(['Timestamp', 'Action', 'Email', 'Name', 'Details']);
+    }
+    sheet.appendRow([new Date(), action, email, name, details]);
+  } catch (err) {
+    Logger.log('Audit log error: ' + err.message);
+  }
 }
