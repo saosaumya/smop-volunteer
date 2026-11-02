@@ -965,6 +965,31 @@ export default function VolunteerSignUp() {
 
             <p className="text-xs text-gray-400 mt-2 italic">Shift times are flexible by around 15–30 minutes. Sign up directly through Peninsula Healthcare Connection's website.</p>
           </div>
+
+          <div className="border border-gray-200 rounded-lg p-4 mt-4">
+            <h3 className="text-md font-semibold text-gray-800">Neighborhood Hands — Park Cleanup</h3>
+            <p className="text-xs text-gray-500 mt-1">Guadalupe Gardens Park, San Jose · Every other Saturday</p>
+            <p className="text-xs text-gray-600 mt-2">Clean the park from ~7:45–9:00 AM, then enjoy a resource fair / "party-in-the-park" until ~10:30 AM. Minimum age 16. Bring gardening gloves & water.</p>
+
+            <div className="mt-3">
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                <div className="flex-1">
+                  <div className="text-sm font-medium text-gray-700">Saturday Morning</div>
+                  <div className="text-xs text-gray-500">7:45 AM – 10:30 AM</div>
+                </div>
+                <a
+                  href="https://signup.com/client/invitation2/secure/539990140053/false#/invitation"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-cardinal text-white text-xs font-semibold px-4 py-2 rounded-lg hover:bg-cardinal-dark transition-colors"
+                >
+                  Sign Up
+                </a>
+              </div>
+            </div>
+
+            <p className="text-xs text-gray-400 mt-2 italic">Sign up directly through SignUp.com. See available dates and roles on the signup page.</p>
+          </div>
         </div>
 
         {pastShifts.length > 0 && (
