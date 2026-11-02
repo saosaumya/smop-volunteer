@@ -364,6 +364,7 @@ export default function VolunteerSignUp() {
   }
 
   function isShiftFull(shift) {
+    if (form.isEventLead) return false;
     const s = getShiftStatus(shift);
     const cap = getUserNonDriverCap(shift);
     const normallyFull = form.canDrive

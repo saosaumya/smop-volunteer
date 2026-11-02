@@ -806,6 +806,8 @@ function validateVolunteerCapacity_(sheet, data) {
   // Validate each shift the volunteer is signing up for
   var shiftLines = Array.isArray(data.shifts) ? data.shifts : [String(data.shifts)];
   var canDrive = data.canDrive === true || data.canDrive === 'true';
+  var isEventLead = data.isEventLead === true || data.isEventLead === 'true';
+  if (isEventLead) return null;
   var studentType = String(data.studentType || '').toLowerCase();
   var isMdPa = studentType === 'md' || studentType === 'pa';
 
