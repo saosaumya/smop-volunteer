@@ -280,6 +280,9 @@ export default function VolunteerSignUp() {
   const pastShifts = allShifts.filter(s => new Date(s.startDateTime).getTime() <= now);
   const [showPast, setShowPast] = useState(false);
   const [showCoordinator, setShowCoordinator] = useState(false);
+  const [coordinatorUnlocked, setCoordinatorUnlocked] = useState(() => {
+    try { return sessionStorage.getItem('smop_coord') === '1'; } catch { return false; }
+  });
   const [removing, setRemoving] = useState(null);
 
   const handleRemoveVolunteer = async (name, shiftDate, shiftSite, type = 'remove-volunteer') => {
@@ -733,12 +736,25 @@ export default function VolunteerSignUp() {
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
               <button
                 type="button"
-                onClick={() => setShowCoordinator(!showCoordinator)}
+                onClick={() => {
+                  if (!coordinatorUnlocked) {
+                    const pw = prompt('Enter coordinator password:');
+                    if (pw === 'saumrocks') {
+                      setCoordinatorUnlocked(true);
+                      try { sessionStorage.setItem('smop_coord', '1'); } catch {}
+                      setShowCoordinator(true);
+                    } else if (pw !== null) {
+                      alert('Incorrect password.');
+                    }
+                  } else {
+                    setShowCoordinator(!showCoordinator);
+                  }
+                }}
                 className="text-sm text-gray-700 hover:text-gray-900 font-semibold flex items-center gap-2 w-full"
               >
                 {showCoordinator ? '▾' : '▸'} Coordinator / Event Lead View
               </button>
-              {showCoordinator && (
+              {showCoordinator && coordinatorUnlocked && (
                 <div className="mt-2 bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3 max-h-96 overflow-y-auto">
                   {futureShifts.map((shift, i) => {
                     const s = getShiftStatus(shift);
