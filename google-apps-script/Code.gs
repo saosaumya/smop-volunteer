@@ -49,9 +49,8 @@ function doPost(e) {
           + 'Common conditions seen in patients include uncontrolled chronic disease such as hypertension and diabetes, as well as wounds and other infections. '
           + 'Several patients may not have accessed health care for several months to years.\n\n'
           + 'PRESCRIBING MEDICATIONS\n'
-          + 'If you feel comfortable prescribing medication for hypertension and diabetes, you can do so on your prescription pad. '
-          + 'We are able to help patients pick up medications from the free Better Health Pharmacy in San Jose (no insurance needed): '
-          + 'https://publichealth.santaclaracounty.gov/programs-and-services/pharmacy-and-vaccination-services/better-health-pharmacy\n\n'
+          + 'If you feel comfortable prescribing medication for hypertension and diabetes, you can do so by calling in the prescription to Better Health Pharmacy. '
+          + 'If you do so, please let Saumya know (ssao@stanford.edu, 4075907065) so that we can arrange to pick up the patients medications.\n\n'
           + 'A calendar invite has been sent separately and should appear on your calendar automatically.\n'
           + 'You will receive reminder emails at 1 week, 3 days, and 1 day before each shift.\n\n'
           + 'Preference: ' + (data.preference || 'on-site') + '\n\n'
@@ -724,9 +723,8 @@ function sendReminders_(sheetName, type) {
           + '- Gloves\n\n'
           + 'If you find yourself in need of anything else, just send me an email ssao@stanford.edu and I\'m happy to order it to keep in our supplies for next time.\n\n'
           + 'PRESCRIBING MEDICATIONS\n'
-          + 'If you feel comfortable prescribing medication for hypertension and diabetes, you can do so on your prescription pad. '
-          + 'We are able to help patients pick up medications from the free Better Health Pharmacy in San Jose (no insurance needed): '
-          + 'https://publichealth.santaclaracounty.gov/programs-and-services/pharmacy-and-vaccination-services/better-health-pharmacy\n\n'
+          + 'If you feel comfortable prescribing medication for hypertension and diabetes, you can do so by calling in the prescription to Better Health Pharmacy. '
+          + 'If you do so, please let Saumya know (ssao@stanford.edu, 4075907065) so that we can arrange to pick up the patients medications.\n\n'
           + 'We look forward to seeing you. If you have any last-minute questions, reply here or text Saumya at 407-590-7065.\n\n'
           + 'Thank you!\nSMOP Team';
       } else {
