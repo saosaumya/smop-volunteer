@@ -768,7 +768,8 @@ function validateVolunteerCapacity_(sheet, data) {
     "WeHOPE": { drivers: 2, nonDrivers: 4 },
     "Peninsula Healthcare Connections": { drivers: 0, nonDrivers: 4 },
     "Family Community Church Fall Fest": { drivers: 2, nonDrivers: 4, driverRatio: 2 },
-    "WeHOPE Berryessa Safe RV Parking": { drivers: 3, nonDrivers: 4 }
+    "WeHOPE Berryessa Safe RV Parking": { drivers: 3, nonDrivers: 4 },
+    "Encina Food Pantry": { drivers: 1, nonDrivers: 3 }
   };
   var MANDARIN_ONLY_SITE = "Hope's Corner";
 
