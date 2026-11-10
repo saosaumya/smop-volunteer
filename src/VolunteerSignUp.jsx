@@ -148,6 +148,7 @@ const allShifts = [
   { date: 'Sunday, November 1', startDateTime: '2026-11-01T09:40:00', time: '9:40 am – 1:15 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
   { date: 'Sunday, November 8', startDateTime: '2026-11-08T09:40:00', time: '9:40 am – 1:15 pm', site: 'WeHOPE Berryessa Safe RV Parking', address: '1300 Berryessa Rd, San Jose, CA 95133' },
   { date: 'Tuesday, November 10', startDateTime: '2026-11-10T17:15:00', time: '5:15 – 7:45 pm', site: 'WeHOPE', address: '1854 Bay Road, East Palo Alto, CA 94303' },
+  { date: 'Wednesday, November 11', startDateTime: '2026-11-11T11:00:00', time: '11:00 am – 2:00 pm', site: 'Encina Food Pantry', address: 'The Opportunity Center, 33 Encina Ave, Palo Alto, CA 94301' },
   { date: 'Saturday, November 14', startDateTime: '2026-11-14T07:00:00', time: '7:00 – 10:30 am', site: "Hope's Corner", address: '748 Mercy St, Mountain View, CA 94041' },
   { date: 'Saturday, November 14', startDateTime: '2026-11-14T07:30:00', time: '7:30 – 10:45 am', site: 'Neighborhood Hands', address: '500 Coleman Ave, San Jose, CA 95110' },
   { date: 'Sunday, November 15', startDateTime: '2026-11-15T09:40:00', time: '9:40 am – 1:15 pm', site: 'Hope for the Unhoused', address: '1432 S Main St, Milpitas, CA 95035' },
@@ -170,6 +171,7 @@ const SITE_CAPACITY = {
   "Hope for the Unhoused": { drivers: 3, nonDrivers: 4 },
   "WeHOPE": { drivers: 2, nonDrivers: 4 },
   "Peninsula Healthcare Connections": { drivers: 0, nonDrivers: 4 },
+  "Encina Food Pantry": { drivers: 1, nonDrivers: 3 },
   "Family Community Church Fall Fest": { drivers: 2, nonDrivers: 4, driverRatio: 2 },
   "WeHOPE Berryessa Safe RV Parking": { drivers: 3, nonDrivers: 4 },
 };
@@ -215,6 +217,9 @@ function formatShiftDetails(shift) {
   }
   if (shift.site === 'Peninsula Healthcare Connections') {
     return `Meet at The Opportunity Center (33 Encina Ave, Palo Alto — next to Trader Joe's near campus) at ${meetTime}. We are joining Peninsula Healthcare Connections to walk around Palo Alto and speak to community members about mobile healthcare needs. Event ends at ${returnTime}.`;
+  }
+  if (shift.site === 'Encina Food Pantry') {
+    return `Drivers: Meet at LKSC at ${meetTime} to load supplies, then drive to ${shift.address}. Non-drivers: Meet on-site at ${shift.address} — easily accessible via the Stanford free shuttle or walking. Event ends at ${returnTime}.`;
   }
   if (shift.site === 'Family Community Church Fall Fest') {
     return `Meet at LKSC at ${meetTime}. We will drive to Family Community Church at ${shift.address} to share health and wellness information at their Family Fall Fest. Event ends at ${returnTime}.`;
