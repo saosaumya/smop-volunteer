@@ -731,7 +731,7 @@ function sendReminders_(sheetName, type) {
         reminderBody = 'Hi ' + name + ',\n\n'
           + 'Your SMOP volunteer shift is TOMORROW!\n\n'
           + shiftText + '\n\n'
-          + 'We look forward to seeing you. If you have any last-minute questions, reply here or text Yaneth at (346) 242-4484.\n\n'
+          + 'We look forward to seeing you. If you have any last-minute questions, reply here or email Yaneth at yanethp@stanford.edu.\n\n'
           + 'Thank you!\nSMOP Team';
       }
       colToMark = 7;
