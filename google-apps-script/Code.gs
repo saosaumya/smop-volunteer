@@ -860,9 +860,12 @@ function validateVolunteerCapacity_(sheet, data) {
 
     var effectiveNonDriverCap = cap.driverRatio ? Math.min(cap.nonDrivers, c.drivers * cap.driverRatio) : cap.nonDrivers;
 
-    // Reserve 2 spots for MD/PA students on every shift
+    // Reserve 2 spots for MD/PA students, released 3 days before the event
     var userNonDriverCap = effectiveNonDriverCap;
-    if (!isMdPa) {
+    var shiftDateStr = dateMatch[1].replace(/^[A-Za-z]+,\s+/, '') + ', 2026';
+    var shiftDate = new Date(shiftDateStr);
+    var daysUntil = (shiftDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24);
+    if (!isMdPa && daysUntil > 3) {
       var reserved = Math.max(0, 2 - (c.mdPaCount || 0));
       userNonDriverCap = Math.max(0, effectiveNonDriverCap - reserved);
     }

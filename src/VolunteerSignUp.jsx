@@ -363,7 +363,8 @@ export default function VolunteerSignUp() {
   function getUserNonDriverCap(shift) {
     const s = getShiftStatus(shift);
     const isMdPa = form.studentType === 'md' || form.studentType === 'pa';
-    if (!isMdPa) {
+    const daysUntil = (new Date(shift.startDateTime).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+    if (!isMdPa && daysUntil > 3) {
       const mdPaCount = s.mdPaCount || 0;
       const reserved = Math.max(0, 2 - mdPaCount);
       return Math.max(0, s.effectiveNonDriverCap - reserved);
