@@ -144,7 +144,32 @@ function doPost(e) {
     ]);
     SpreadsheetApp.flush();
 
-    auditLog_('SIGNUP', data.email, data.name, shifts);
+    // Verify the row was actually written
+    var lastRow = sheet.getLastRow();
+    var writtenEmail = String(sheet.getRange(lastRow, 3).getValue() || '').trim();
+    if (writtenEmail.toLowerCase() !== data.email.toLowerCase().trim()) {
+      Logger.log('VERIFY FAILED: expected ' + data.email + ' at row ' + lastRow + ', got ' + writtenEmail);
+      auditLog_('VERIFY_FAIL', data.email, data.name, 'Row not found after write. Last row email: ' + writtenEmail);
+      sheet.appendRow([
+        new Date(),
+        data.name,
+        data.email,
+        data.phone || '',
+        data.studentType || '',
+        data.affiliation || '',
+        data.smopFellow || false,
+        languages,
+        shifts,
+        data.notes || '',
+        data.canDrive || false,
+        data.hasBadgeAccess || false,
+        data.isEventLead || false
+      ]);
+      SpreadsheetApp.flush();
+      auditLog_('RETRY_SIGNUP', data.email, data.name, shifts);
+    } else {
+      auditLog_('SIGNUP', data.email, data.name, shifts);
+    }
 
     // Store pre-assessment if present (first-time volunteer)
     if (data.preAssessment && typeof data.preAssessment === 'object' && Object.keys(data.preAssessment).length > 0) {
@@ -390,6 +415,55 @@ function doGet(e) {
       }
     }
     return ContentService.createTextOutput(JSON.stringify({ exists: exists }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  if (params.type === 'audit-log') {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Audit Log');
+    var entries = [];
+    if (sheet) {
+      var data = sheet.getDataRange().getValues();
+      for (var i = 1; i < data.length; i++) {
+        var email = String(data[i][2] || '').toLowerCase().trim();
+        if (!params.email || email === params.email.toLowerCase().trim()) {
+          entries.push({ timestamp: data[i][0], action: data[i][1], email: data[i][2], name: data[i][3], details: data[i][4] });
+        }
+      }
+    }
+    return ContentService.createTextOutput(JSON.stringify({ entries: entries }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  if (params.type === 'verify-reminders') {
+    var reminderSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Volunteer Reminders');
+    var volSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Student Volunteers');
+    var mismatches = [];
+    if (reminderSheet && volSheet) {
+      var volData = volSheet.getDataRange().getValues();
+      var volEmails = {};
+      for (var i = 1; i < volData.length; i++) {
+        var email = String(volData[i][2] || '').toLowerCase().trim();
+        var shifts = String(volData[i][8] || '');
+        if (!volEmails[email]) volEmails[email] = { name: volData[i][1], shifts: '' };
+        volEmails[email].shifts += shifts + '\n';
+      }
+      var remData = reminderSheet.getDataRange().getValues();
+      var seen = {};
+      for (var i = 1; i < remData.length; i++) {
+        var remEmail = String(remData[i][0] || '').toLowerCase().trim();
+        var remName = String(remData[i][1] || '');
+        var remShift = String(remData[i][2] || '');
+        var key = remEmail + '|' + remShift;
+        if (seen[key]) continue;
+        seen[key] = true;
+        if (!volEmails[remEmail]) {
+          mismatches.push({ email: remEmail, name: remName, shift: remShift, issue: 'not in Student Volunteers' });
+        } else if (volEmails[remEmail].shifts.indexOf(remShift.split(' — ')[0]) === -1) {
+          mismatches.push({ email: remEmail, name: remName, shift: remShift, issue: 'shift not found in Student Volunteers' });
+        }
+      }
+    }
+    return ContentService.createTextOutput(JSON.stringify({ mismatches: mismatches }))
       .setMimeType(ContentService.MimeType.JSON);
   }
 
