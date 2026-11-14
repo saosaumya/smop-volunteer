@@ -360,6 +360,16 @@ export default function VolunteerSignUp() {
     return { ...merged, capDrivers: cap.drivers, capNonDrivers: cap.nonDrivers, effectiveNonDriverCap };
   }
 
+  function isSignupClosed(shift) {
+    const eventDate = new Date(shift.startDateTime);
+    const day = eventDate.getDay();
+    const daysBack = day >= 4 ? day - 4 : day + 3;
+    const thursBefore = new Date(eventDate);
+    thursBefore.setDate(eventDate.getDate() - daysBack);
+    thursBefore.setHours(23, 59, 59, 999);
+    return Date.now() > thursBefore.getTime();
+  }
+
   function getUserNonDriverCap(shift) {
     const s = getShiftStatus(shift);
     const isMdPa = form.studentType === 'md' || form.studentType === 'pa';
@@ -680,6 +690,7 @@ export default function VolunteerSignUp() {
                   <p className="text-gray-500 text-sm italic py-4 text-center">No shifts available. Please check back soon.</p>
                 )}
                 {availableShifts.map((shift, i) => {
+                  if (isSignupClosed(shift)) return null;
                   if (isShiftFull(shift) && !form.shifts.includes(i)) return null;
                   const tag = getSiteTag(shift, form);
                   const s = getShiftStatus(shift);

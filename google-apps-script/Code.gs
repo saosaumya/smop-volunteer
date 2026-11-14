@@ -878,6 +878,26 @@ function validateVolunteerCapacity_(sheet, data) {
 
   // Validate each shift the volunteer is signing up for
   var shiftLines = Array.isArray(data.shifts) ? data.shifts : [String(data.shifts)];
+
+  // Thursday cutoff: no sign-ups after the Thursday before the event
+  if (data.shiftsStructured && Array.isArray(data.shiftsStructured)) {
+    var now = new Date();
+    for (var si = 0; si < data.shiftsStructured.length; si++) {
+      var sd = data.shiftsStructured[si].startDateTime;
+      if (sd) {
+        var eventDate = new Date(sd);
+        var day = eventDate.getDay();
+        var daysBack = day >= 4 ? day - 4 : day + 3;
+        var thursBefore = new Date(eventDate.getTime());
+        thursBefore.setDate(eventDate.getDate() - daysBack);
+        thursBefore.setHours(23, 59, 59, 999);
+        if (now.getTime() > thursBefore.getTime()) {
+          return 'Sign-ups for ' + data.shiftsStructured[si].date + ' closed on Thursday. Please contact ssao@stanford.edu if you need to be added.';
+        }
+      }
+    }
+  }
+
   var canDrive = data.canDrive === true || data.canDrive === 'true';
   var isEventLead = data.isEventLead === true || data.isEventLead === 'true';
   if (isEventLead) return null;
